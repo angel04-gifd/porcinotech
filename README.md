@@ -83,3 +83,31 @@ Todos los usuarios ven los mismos datos de la granja.
 | Partos: eliminar | ✅ | ❌ |
 | Etapas productivas: modificar | ✅ | ❌ (solo lectura) |
 | Cambiar roles | Solo desde SQL Editor | ❌ |
+
+## Instalar la app en un celular Android
+
+La app se instala con el archivo `app-release.apk` (solo Android; en iPhone no
+se puede instalar un APK). El APK no está en este repositorio: pídeselo al
+administrador del proyecto por Drive o mensajería.
+
+1. Descarga el APK en el celular (o pásalo por cable o Drive).
+2. Ábrelo. Android pedirá permitir **instalar apps desconocidas** para la app
+   desde la que lo abriste (Chrome, Archivos, WhatsApp…): actívalo.
+3. Si aparece el aviso de **Play Protect**, elige **Instalar de todos modos**: la
+   app no está en Play Store y por eso no está verificada.
+4. Abre **PorcinoTech**, toca registrarte con tu correo y una contraseña, e
+   inicia sesión. Tu cuenta nace con el rol **operador** (ver la tabla de
+   permisos). Solo el administrador puede promover a otro usuario.
+5. Necesitas internet: todos los usuarios comparten los mismos datos de la
+   granja en tiempo real.
+
+## Generar un APK nuevo (administrador)
+
+Requiere `env.json` con tu URL y clave anon de Supabase (nunca se sube al
+repositorio) y haber ejecutado todas las migraciones:
+
+```powershell
+flutter build apk --release --dart-define-from-file=env.json
+```
+
+El archivo queda en `build/app/outputs/flutter-apk/app-release.apk`.
