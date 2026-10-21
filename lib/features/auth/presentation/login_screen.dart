@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:go_router/go_router.dart';
 import 'auth_controller.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -15,6 +16,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _password = TextEditingController();
   final _name = TextEditingController();
   bool _registering = false;
+  bool _showPassword = false;
 
   @override
   void dispose() {
@@ -40,33 +42,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           content: Text(
             requiresConfirmation
                 ? 'Cuenta creada. Revisa tu correo para confirmarla.'
-                : 'Cuenta creada. Ya puedes ingresar.',
+                : 'Cuenta creada. Ahora crea tu granja o únete con un código.',
           ),
         ),
       );
     } else {
       await controller.signIn(email: _email.text, password: _password.text);
-    }
-  }
-
-  Future<void> _recoverPassword() async {
-    if (_email.text.trim().isEmpty || !_email.text.contains('@')) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Ingresa primero un correo válido.')),
-      );
-      return;
-    }
-    await ref
-        .read(authControllerProvider.notifier)
-        .recoverPassword(email: _email.text);
-    if (mounted && !ref.read(authControllerProvider).hasError) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Si el correo está registrado, recibirás un enlace para restablecer tu contraseña.',
-          ),
-        ),
-      );
     }
   }
 
@@ -100,11 +81,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.pets, size: 56),
+                        Image.asset(
+                          'assets/images/logo.png',
+                          height: 150,
+                          semanticLabel: 'PorcinoTech',
+                        ),
                         const SizedBox(height: 12),
                         Text(
-                          'PorcinoTech',
-                          style: Theme.of(context).textTheme.headlineMedium,
+                          _registering
+                              ? 'Crea tu cuenta'
+                              : 'Inicia sesión para ver tu granja',
+                          style: Theme.of(context).textTheme.titleMedium,
                         ),
                         const SizedBox(height: 24),
                         TextFormField(
@@ -130,13 +117,37 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         const SizedBox(height: 16),
                         TextFormField(
                           controller: _password,
-                          obscureText: true,
-                          decoration: const InputDecoration(
+                          obscureText: !_showPassword,
+                          decoration: InputDecoration(
                             labelText: 'Contraseña',
+                            suffixIcon: IconButton(
+                              tooltip: _showPassword
+                                  ? 'Ocultar contraseña'
+                                  : 'Mostrar contraseña',
+                              icon: Icon(
+                                _showPassword
+                                    ? Icons.visibility_off_outlined
+                                    : Icons.visibility_outlined,
+                              ),
+                              onPressed: () => setState(
+                                () => _showPassword = !_showPassword,
+                              ),
+                            ),
+                            helperText: _registering
+                                ? 'Mínimo 8 caracteres, con letras y números'
+                                : null,
                           ),
-                          validator: (v) => v != null && v.length >= 6
-                              ? null
-                              : 'Mínimo 6 caracteres',
+                          validator: (v) {
+                            final value = v ?? '';
+                            if (value.isEmpty) return 'Ingresa tu contraseña';
+                            if (!_registering) return null;
+                            if (value.length < 8 ||
+                                !RegExp(r'[A-Za-z]').hasMatch(value) ||
+                                !RegExp(r'\d').hasMatch(value)) {
+                              return 'Mínimo 8 caracteres, con letras y números';
+                            }
+                            return null;
+                          },
                         ),
                         const SizedBox(height: 24),
                         FilledButton(
@@ -157,7 +168,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ),
                         if (!_registering)
                           TextButton(
-                            onPressed: isLoading ? null : _recoverPassword,
+                            onPressed: isLoading
+                                ? null
+                                : () => context.go('/recuperar'),
                             child: const Text('¿Olvidaste tu contraseña?'),
                           ),
                         TextButton(

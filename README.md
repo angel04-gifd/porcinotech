@@ -1,45 +1,110 @@
 # PorcinoTech
 
-## Configuración de acceso
+## Cómo funcionan las cuentas y las granjas
 
-No hay credenciales incluidas en el código. La app requiere un proyecto de
-Supabase propio y no debe usarse una cuenta administradora compartida.
+- **Registro:** solo correo, nombre y contraseña. Todo lo que captures queda en
+  la nube (Supabase) ligado a tu cuenta, no en el teléfono. Si desinstalas la
+  app y la vuelves a instalar, basta con **iniciar sesión** con el mismo correo
+  y contraseña para recuperar todo.
+- **Después de registrarte eliges:**
+  - **Crear una granja** → eres su *administrador*. Puedes crear todas las que
+    quieras (3 granjas = 3 conjuntos de datos separados) y cambiar entre ellas
+    con el botón de la granja en la barra superior.
+  - **Unirte con un código** → eres *operador* de esa granja. El administrador
+    ve el código en **Perfil > Mi granja** y se lo pasa al operador.
+- **Datos separados:** cada granja solo ve sus propios cerdos, corrales,
+  alimentos, consumos y partos (reglas RLS en la base).
+- **Datos personales:** en **Perfil** cada persona captura nombre, teléfono y
+  puesto. El administrador ve el **Equipo de la granja** (quién es cada
+  operador y cómo contactarlo) y puede quitar operadores.
+- La app ya trae su conexión (solo la clave pública, protegida por RLS), así
+  que quien descargue el APK solo inicia sesión: no hay pantalla de servidor ni
+  claves que ver o escribir.
+- **Contraseña:** en el login se puede mostrar/ocultar; al registrarse pide mínimo
+  8 caracteres con letras y números.
+- **Recuperar contraseña:** «¿Olvidaste tu contraseña?» envía un código de 6
+  dígitos al correo; con el código se escribe la nueva contraseña dentro de la
+  app (sin enlaces ni navegador). Requiere el paso de correo de abajo.
 
-1. Crea un proyecto en Supabase y ejecuta `supabase/schema.sql` en **SQL Editor**.
-   Después, en este orden, ejecuta:
-   `supabase/migrations/20260928_food_ration_and_stock.sql`,
-   `supabase/migrations/20260929_roles_permissions.sql`,
-   `supabase/migrations/20260930_roles_crud_stages.sql`,
-   `supabase/migrations/20261001_arete_unico.sql`,
-   `supabase/migrations/20261002_reglas_negocio.sql` y
-   `supabase/realtime.sql`.
-   Las migraciones pueden volver a ejecutarse, salvo que los datos ya rompan la
-   regla que crean: `20261001` falla si hay aretes repetidos y `20261002` si una
-   cerda tiene dos gestaciones pendientes (el propio archivo explica cómo
-   resolverlo).
-2. En **Authentication > Providers > Email**, habilita el proveedor Email. Para
-   desarrollo puedes desactivar **Confirm email**; en producción configura SMTP
-   y mantenlo activado.
-3. Copia el **Project URL** y la clave pública **anon** desde **Settings > API**
-   en `env.json`. Nunca uses ni publiques la clave `service_role` en Flutter.
-4. Ejecuta o compila la aplicación siempre con `env.json`:
+### Configurar el correo de recuperación (una vez, en Supabase)
+1. **Authentication > Emails > Templates > Reset Password**: reemplaza el
+   contenido por algo como
+   `<h2>Recupera tu contraseña</h2><p>Tu código es: <b>{{ .Token }}</b></p>`.
+2. **Authentication > Sign In / Providers > Email**: sube «Minimum password
+   length» a 8 y activa «Leaked password protection» si tu plan lo permite.
+3. El correo de pruebas de Supabase está limitado (pocos mensajes por hora). Para
+   uso real configura un SMTP propio en **Authentication > SMTP Settings**.
 
+## Publicar el APK en GitHub Releases
+
+La app usa el identificador `mx.utvm.porcinotech` (se cambia en
+`android/app/build.gradle.kts`, línea `applicationId`; cámbialo antes de la
+primera publicación, porque después Android lo trata como otra app).
+
+1. **Llave de firma (una sola vez; guárdala, sin ella no podrás actualizar):**
    ```powershell
-   flutter run --dart-define-from-file=env.json
-   flutter build apk --release --dart-define-from-file=env.json
+   keytool -genkey -v -keystore porcinotech.jks -keyalg RSA -keysize 2048 -validity 10000 -alias porcinotech
    ```
+2. **Automático con GitHub:** en el repositorio, *Settings > Secrets and
+   variables > Actions*, crea `ANDROID_KEYSTORE_BASE64` (el `.jks` en base64:
+   `[Convert]::ToBase64String([IO.File]::ReadAllBytes("porcinotech.jks"))`),
+   `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS` y `ANDROID_KEY_PASSWORD`.
+   Luego sube una etiqueta: `git tag v1.0.0` y `git push origin v1.0.0`. El
+   flujo `.github/workflows/release.yml` (copia ahí el archivo `docs/release.yml`) construye el APK y lo adjunta al
+   Release como `PorcinoTech.apk`.
+3. **A mano:** crea `android/key.properties` con `storeFile`, `storePassword`,
+   `keyAlias` y `keyPassword` y ejecuta `flutter build apk --release`; el APK
+   queda en `build/app/outputs/flutter-apk/app-release.apk`.
 
-   El APK queda en `build/app/outputs/flutter-apk/app-release.apk`. Sin
-   `--dart-define-from-file` la app se cierra al abrir.
+## Montar tu propio servidor (opcional)
 
-5. Registra `TU_CORREO@ejemplo.com` en la app y ejecuta
-   `supabase/assign_initial_admin.sql` en **SQL Editor** para promover esa
-   cuenta. Las demás cuentas nacen con el rol `operador`. Cierra sesión y vuelve
-   a entrar para ver las opciones de administrador.
+1. Crea un proyecto gratuito en [supabase.com](https://supabase.com).
+2. En **SQL Editor** pega y ejecuta todo `supabase/setup_completo.sql`
+   (en un proyecto nuevo y vacío; crea tablas, reglas y permisos).
+3. En **Authentication > Providers > Email** deja habilitado Email. Para
+   pruebas puedes desactivar **Confirm email**; en producción configura SMTP.
+4. En **Project Settings > API** copia la **Project URL** y la clave
+   **publishable** (anon). Nunca uses `service_role` / `sb_secret_`: la app la
+   rechaza.
+5. Pon esos datos en `lib/core/config/app_config.dart` o compílala con
+   `--dart-define-from-file=env.json` (ver `env.example.json`).
 
-Si pierdes una contraseña, restablécela desde Authentication en el panel o con
-**¿Olvidaste tu contraseña?** en el login (configura la URL de redirección en
-**Authentication > URL Configuration**).
+Si pierdes una contraseña, usa **¿Olvidaste tu contraseña?** en el login
+(configura la URL de redirección en **Authentication > URL Configuration**).
+
+### Ejecutar desde el código (desarrolladores)
+
+```powershell
+flutter pub get
+flutter run -d chrome
+```
+
+Opcionalmente puedes dar un valor inicial de conexión con `env.json`
+(copia `env.example.json`; no se sube al repositorio):
+
+```powershell
+flutter run -d chrome --dart-define-from-file=env.json
+flutter build apk --release
+```
+
+Lo que se guarde en la pantalla de conexión tiene prioridad sobre `env.json`.
+
+Si ya tenías un proyecto creado con las migraciones anteriores, no vuelvas a
+ejecutar `setup_completo.sql`. Para separar las granjas ejecuta, en este orden,
+`supabase/respaldo_antes_de_20261003.sql` (copia de seguridad de tus datos en el
+esquema `respaldo_20261020`) y `supabase/migrations/20261003_multi_granja.sql`.
+Los datos que ya existían quedan juntos en la «Granja principal» y sus cuentas
+conservan su rol.
+
+## APIs e integraciones
+
+| API | Para qué sirve | Estado |
+|---|---|---|
+| Supabase Auth | Registro, inicio de sesión y sesión persistente | Activa |
+| Supabase REST (PostgREST) | Lectura y escritura de cerdos, corrales, alimentos y partos con reglas RLS | Activa |
+| Supabase Realtime | Cambios en vivo entre usuarios de la misma granja | Activa |
+| Open-Meteo (clima y geocodificación, sin clave) | Temperatura y alerta de estrés por calor en el inicio | Activa |
+| Inicio de sesión con Google | Entrar con la cuenta de Google | Pendiente (al final) |
 
 ## Alimentación
 
@@ -69,7 +134,7 @@ La base de datos las hace cumplir (la app solo avisa antes):
 
 ## Permisos por rol
 
-Todos los usuarios ven los mismos datos de la granja.
+Todos los integrantes de una misma granja ven los mismos datos; otra granja no. El rol (administrador/operador) es por granja.
 
 | Acción | Administrador | Operador |
 |---|---|---|
@@ -81,7 +146,8 @@ Todos los usuarios ven los mismos datos de la granja.
 | Alimentos: crear, editar stock, eliminar | ✅ | ❌ |
 | Inseminaciones y partos reales: registrar | ✅ | ✅ |
 | Partos: eliminar | ✅ | ❌ |
-| Etapas productivas: modificar | ✅ | ❌ (solo lectura) |
+| Etapas productivas: modificar | ❌ (catálogo común, solo lectura) | ❌ |
+| Ver el código de granja e invitar operadores | ✅ | ❌ |
 | Cambiar roles | Solo desde SQL Editor | ❌ |
 
 ## Instalar la app en un celular Android
@@ -95,19 +161,18 @@ administrador del proyecto por Drive o mensajería.
    desde la que lo abriste (Chrome, Archivos, WhatsApp…): actívalo.
 3. Si aparece el aviso de **Play Protect**, elige **Instalar de todos modos**: la
    app no está en Play Store y por eso no está verificada.
-4. Abre **PorcinoTech**, toca registrarte con tu correo y una contraseña, e
-   inicia sesión. Tu cuenta nace con el rol **operador** (ver la tabla de
-   permisos). Solo el administrador puede promover a otro usuario.
-5. Necesitas internet: todos los usuarios comparten los mismos datos de la
-   granja en tiempo real.
+4. Abre **PorcinoTech**, toca **Crear una cuenta** con tu correo y contraseña y
+   elige crear tu granja (administrador) o unirte con un código (operador).
+5. Necesitas internet: los usuarios de una misma granja comparten los mismos datos
+   en tiempo real.
 
 ## Generar un APK nuevo (administrador)
 
-Requiere `env.json` con tu URL y clave anon de Supabase (nunca se sube al
-repositorio) y haber ejecutado todas las migraciones:
+No necesita claves de compilación (la conexión se configura dentro de la app)
+y basta con haber ejecutado `supabase/setup_completo.sql`:
 
 ```powershell
-flutter build apk --release --dart-define-from-file=env.json
+flutter build apk --release
 ```
 
 El archivo queda en `build/app/outputs/flutter-apk/app-release.apk`.
