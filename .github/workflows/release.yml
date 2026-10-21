@@ -1,0 +1,67 @@
+# Construye el APK y lo publica en GitHub Releases.
+# Uso: crea una etiqueta y súbela:  git tag v1.0.0 && git push origin v1.0.0
+# (también se puede lanzar a mano desde la pestaña Actions).
+name: Publicar APK
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Firma (opcional)
+        # Si defines los secretos ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD,
+        # ANDROID_KEY_ALIAS y ANDROID_KEY_PASSWORD en Settings > Secrets, el APK
+        # sale firmado con tu llave; si no, con la de depuración (solo pruebas).
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          STORE_PASS: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASS: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          if [ -n "$KEYSTORE_B64" ]; then
+            echo "$KEYSTORE_B64" | base64 --decode > android/app/release.jks
+            {
+              echo "storeFile=release.jks"
+              echo "storePassword=$STORE_PASS"
+              echo "keyAlias=$KEY_ALIAS"
+              echo "keyPassword=$KEY_PASS"
+            } > android/key.properties
+          fi
+
+      - run: flutter pub get
+      - run: flutter analyze --no-fatal-infos
+      - run: flutter test
+      - run: flutter build apk --release
+
+      - name: Renombrar APK
+        run: cp build/app/outputs/flutter-apk/app-release.apk PorcinoTech.apk
+
+      - uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: PorcinoTech.apk
+          generate_release_notes: true
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PorcinoTech-apk
+          path: PorcinoTech.apk
