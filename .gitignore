@@ -44,3 +44,8 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 /env.json
+
+# Firma de la app (nunca subir)
+android/key.properties
+*.jks
+*.keystore

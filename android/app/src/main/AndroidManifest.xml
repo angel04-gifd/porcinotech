@@ -2,7 +2,9 @@
     <!-- Necesario en release para conectarse a Supabase. -->
     <uses-permission android:name="android.permission.INTERNET"/>
     <application
-        android:label="porcinotech"
+        android:label="PorcinoTech"
+        android:allowBackup="false"
+        android:usesCleartextTraffic="false"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
