@@ -50,7 +50,7 @@ primera publicación, porque después Android lo trata como otra app).
    `[Convert]::ToBase64String([IO.File]::ReadAllBytes("porcinotech.jks"))`),
    `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS` y `ANDROID_KEY_PASSWORD`.
    Luego sube una etiqueta: `git tag v1.0.0` y `git push origin v1.0.0`. El
-   flujo `.github/workflows/release.yml` (copia ahí el archivo `docs/release.yml`) construye el APK y lo adjunta al
+   flujo `.github/workflows/release.yml` construye el APK y lo adjunta al
    Release como `PorcinoTech.apk`.
 3. **A mano:** crea `android/key.properties` con `storeFile`, `storePassword`,
    `keyAlias` y `keyPassword` y ejecuta `flutter build apk --release`; el APK
