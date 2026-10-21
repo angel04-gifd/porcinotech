@@ -7,6 +7,7 @@ import '../../alimentos/data/feed_plan.dart';
 import '../../alimentos/data/food_repository.dart';
 import '../../alimentos/data/production_stage_repository.dart';
 import 'consumption_chart.dart';
+import 'weather_card.dart';
 import '../../cerdos/data/pig_repository.dart';
 import '../../corrales/data/pen_repository.dart';
 import '../../dashboard/data/consumption_repository.dart';
@@ -125,6 +126,8 @@ class DashboardScreen extends ConsumerWidget {
               },
             ),
           ),
+          const SizedBox(height: 12),
+          const WeatherCard(),
           const SizedBox(height: 12),
           _buildFeedBalance(context, foods, feedPlan),
           const SizedBox(height: 12),
