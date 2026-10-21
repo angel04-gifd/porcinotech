@@ -37,7 +37,11 @@ class AuthController extends AsyncNotifier<void> {
   }) => _run<bool>(
     () => ref
         .read(authRepositoryProvider)
-        .signUp(email: email, password: password, nombre: nombre),
+        .signUp(
+          email: email,
+          password: password,
+          nombre: nombre,
+        ),
   );
 
   Future<T?> _run<T>(Future<T> Function() operation) async {
