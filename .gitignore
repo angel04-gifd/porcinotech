@@ -49,3 +49,7 @@ app.*.map.json
 android/key.properties
 *.jks
 *.keystore
+
+# Scripts con correos y datos de prueba personales (solo locales)
+supabase/ajustar_roles.sql
+supabase/datos_demo.sql
