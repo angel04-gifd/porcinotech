@@ -1,0 +1,53 @@
+name: 📝 Observación o comentario
+description: Cuéntame qué probaste, qué falló o qué mejorarías en PorcinoTech.
+title: "[Observación] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ¡Gracias por probar **PorcinoTech**! 🐖 Cada observación ayuda a mejorar la app.
+  - type: dropdown
+    id: tipo
+    attributes:
+      label: ¿Qué tipo de observación es?
+      options:
+        - 🐞 Error (algo no funciona)
+        - 💡 Sugerencia de mejora
+        - 🎨 Diseño o facilidad de uso
+        - ❓ Duda
+        - 👏 Algo que me gustó
+    validations:
+      required: true
+  - type: dropdown
+    id: modulo
+    attributes:
+      label: ¿En qué parte de la app?
+      options:
+        - Inicio (consumo y clima)
+        - Cerdos
+        - Corrales
+        - Alimentos
+        - Inseminaciones y partos
+        - Perfil y equipo de la granja
+        - Registro / inicio de sesión
+        - Otra
+    validations:
+      required: true
+  - type: textarea
+    id: descripcion
+    attributes:
+      label: Describe tu observación
+      description: Cuéntame qué pasó o qué propones. Si es un error, indica los pasos para repetirlo.
+      placeholder: "Ej. Al registrar un consumo mayor al stock aparece..."
+    validations:
+      required: true
+  - type: input
+    id: dispositivo
+    attributes:
+      label: Tu celular y versión de Android (opcional)
+      placeholder: "Ej. Samsung A14, Android 14"
+  - type: textarea
+    id: capturas
+    attributes:
+      label: Capturas de pantalla (opcional)
+      description: Puedes arrastrar las imágenes aquí.

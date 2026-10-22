@@ -11,7 +11,7 @@
 ![Android](https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)
 ![Riverpod](https://img.shields.io/badge/Riverpod-00B0FF?style=for-the-badge)
 
-[📥 Descargar APK](../../releases) · [🚜 Funciones](#-funciones) · [💻 Compilar](#-compilar-desde-el-código) · [🔒 Roles](#-permisos-por-rol)
+[📥 Descargar APK](../../releases) · [🚜 Funciones](#-funciones) · [💻 Compilar](#-compilar-desde-el-código) · [🔒 Roles](#-permisos-por-rol) · [💬 Observaciones](#-observaciones-y-comentarios)
 
 </div>
 
@@ -42,6 +42,19 @@ Hecha con **Flutter + Supabase**. No necesita servidor propio: la app habla dire
 - 🔑 **Cuentas seguras:** registro con correo, contraseña con mínimo 8 caracteres (letras y números) y recuperación con código de 6 dígitos, sin salir de la app.
 - ☁️ **Todo en la nube:** si desinstalas la app, inicias sesión y recuperas tus datos.
 - 🔄 **Tiempo real:** los cambios de un compañero se ven al instante en la misma granja.
+
+## 💬 Observaciones y comentarios
+
+¿Probaste la app? Tus comentarios me ayudan a mejorarla. Reporta errores, sugerencias o dudas desde **Issues**:
+
+👉 [**Dejar una observación**](../../issues/new?template=observacion.yml)
+
+1. Entra a la pestaña **Issues** del repositorio y pulsa **New issue**.
+2. Elige **📝 Observación o comentario** y llena el formulario (tipo, parte de la app y descripción).
+3. Si es un error, agrega los pasos para repetirlo y una captura de pantalla.
+4. Pulsa **Submit new issue**. Te avisaré por GitHub cuando lo revise o lo resuelva.
+
+Puedes ver todas las observaciones en la pestaña [Issues](../../issues).
 
 ## 🧩 Arquitectura
 
