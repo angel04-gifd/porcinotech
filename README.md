@@ -11,7 +11,7 @@
 ![Android](https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)
 ![Riverpod](https://img.shields.io/badge/Riverpod-00B0FF?style=for-the-badge)
 
-[📥 Descargar APK](../../releases) · [🚜 Funciones](#-funciones) · [💻 Compilar](#-compilar-desde-el-código) · [🔒 Roles](#-permisos-por-rol) · [💬 Observaciones](#-observaciones-y-comentarios)
+[📥 Descargar APK](../../releases/latest) · [🚜 Funciones](#-funciones) · [🧪 Testers](#-zona-de-testers) · [💬 Observaciones](#-observaciones-y-comentarios) · [🔧 Desarrolladores](#-para-desarrolladores)
 
 </div>
 
@@ -19,11 +19,15 @@
 
 PorcinoTech es una app móvil para llevar el control de una granja porcina: registra tus cerdos, organiza los corrales, calcula la ración diaria, da seguimiento a las gestaciones y consulta el clima para prevenir el estrés por calor.
 
-Hecha con **Flutter + Supabase**. No necesita servidor propio: la app habla directo con Supabase y la seguridad la hace cumplir la base de datos (RLS).
+Hecha con **Flutter + Supabase**. No necesitas configurar nada: instalas la app, creas tu cuenta y listo.
+
+---
+
+# 🐖 Para usuarios
 
 ## 📥 Instalar en tu teléfono
 
-1. Descarga **`PorcinoTech.apk`** desde la sección [**Releases**](../../releases) de este repositorio.
+1. Descarga **`PorcinoTech.apk`** desde la sección [**Releases**](../../releases/latest) de este repositorio.
 2. Ábrelo en tu teléfono Android. Si te lo pide, permite **"Instalar apps desconocidas"** para el navegador o administrador de archivos que usaste.
 3. Si aparece el aviso de **Play Protect**, elige **Instalar de todos modos** (la app no está en Play Store, por eso no está verificada).
 4. Abre **PorcinoTech**, toca **Crear una cuenta** y elige: **crear tu granja** (administrador) o **unirte con un código** (operador).
@@ -37,26 +41,89 @@ Hecha con **Flutter + Supabase**. No necesita servidor propio: la app habla dire
 - 🏚️ **Corrales:** capacidad, estado y etapa productiva de cada uno.
 - 🌽 **Alimentación automática:** la ración diaria se calcula sola según los cerdos y la etapa de cada corral, y el stock se descuenta al registrar consumos.
 - 🍼 **Inseminaciones y partos:** próximos partos, gestaciones fallidas y partos reales con reglas de negocio.
-- 📈 **Panel de inicio:** gráfica de consumo y ☀️ **clima en vivo** con alerta de estrés por calor (Open-Meteo).
+- 📈 **Panel de inicio:** gráfica de consumo y ☀️ **clima en vivo** con alerta de estrés por calor.
 - 🏡 **Multigranja:** crea todas las granjas que quieras, cada una con sus datos separados, y cambia entre ellas con un toque.
 - 🔑 **Cuentas seguras:** registro con correo, contraseña con mínimo 8 caracteres (letras y números) y recuperación con código de 6 dígitos, sin salir de la app.
 - ☁️ **Todo en la nube:** si desinstalas la app, inicias sesión y recuperas tus datos.
 - 🔄 **Tiempo real:** los cambios de un compañero se ven al instante en la misma granja.
 
+## 🧑‍🌾 Cuentas y granjas
+
+- **Registro:** solo correo, nombre y contraseña. Todo queda en la nube ligado a tu cuenta.
+- **Crear una granja** → eres **administrador**. Puedes tener varias y cambiar entre ellas con el botón de la granja en la barra superior.
+- **Unirte con un código** → eres **operador**. El administrador ve el código en **Perfil > Mi granja** y se lo comparte.
+- **Datos separados:** cada granja solo ve sus propios cerdos, corrales, alimentos, consumos y partos.
+- **Equipo:** en **Perfil** cada persona captura nombre, teléfono y puesto; el administrador ve al **Equipo de la granja** y puede quitar operadores.
+
+### 🔒 Permisos por rol
+
+Todos los integrantes de una misma granja ven los mismos datos; otra granja no. El rol (administrador/operador) es **por granja**.
+
+| Acción | Administrador | Operador |
+|---|:---:|:---:|
+| Cerdos: ver, registrar, editar | ✅ | ✅ |
+| Cerdos: eliminar (o archivar si tiene partos) | ✅ | ❌ |
+| Corrales: ver y cambiar estado | ✅ | ✅ |
+| Corrales: crear, editar datos, eliminar | ✅ | ❌ |
+| Alimentos: ver y registrar consumo | ✅ | ✅ |
+| Alimentos: crear, editar stock, eliminar | ✅ | ❌ |
+| Inseminaciones y partos reales: registrar | ✅ | ✅ |
+| Partos: eliminar | ✅ | ❌ |
+| Ver el código de granja e invitar operadores | ✅ | ❌ |
+
+## 🌽 Alimentación
+
+Cada corral tiene una etapa productiva (**Pre-inicio, Inicio, Desarrollo, Engorda, Gestación, Lactancia**) con una ración sugerida. La ración diaria se calcula sola:
+
+`cerdos activos del corral × ración de su etapa`
+
+Un alimento puede asignarse a una etapa (solo cuenta los corrales de esa etapa) o a todas. Al registrar un consumo, se resta del stock y no se permiten consumos mayores que la existencia.
+
+## 📋 Reglas de la app
+
+La base de datos las hace cumplir (la app solo avisa antes):
+
+- Una cerda tiene una sola gestación en curso. Si no llega a parir, se marca como **fallida** desde *Próximos partos* y queda libre para una nueva inseminación.
+- Solo una hembra activa puede inseminarse, y no antes de su nacimiento.
+- El parto real no puede registrarse antes de 100 días de la monta ni en el futuro.
+- Una cerda con gestación en curso no puede cambiar de sexo ni pasar a vendida, fallecida o baja.
+- Un corral no admite más cerdos activos que su capacidad.
+- El peso va de 0 a 500 kg.
+
+---
+
+# 🧪 Zona de testers
+
+¿Eres tester? Gracias por ayudar a probar la app. Cada quien tiene **su propio apartado con su nombre** para dejar sus comentarios:
+
+| Tester | Su apartado |
+|---|---|
+| [@A1ex9915](https://github.com/A1ex9915) | [📝 Mis observaciones](testers/A1ex9915.md) |
+| [@belemmart](https://github.com/belemmart) | [📝 Mis observaciones](testers/belemmart.md) |
+| [@Julio10Mon](https://github.com/Julio10Mon) | [📝 Mis observaciones](testers/Julio10Mon.md) |
+
+Lee la [**guía para testers**](testers/README.md): cómo participar, qué conviene probar y las reglas rápidas.
+
+> 🔓 Este repositorio es **público**: lo que escribas en tu apartado lo puede ver cualquiera. No pongas contraseñas ni datos reales.
+
 ## 💬 Observaciones y comentarios
 
-¿Probaste la app? Tus comentarios me ayudan a mejorarla. Reporta errores, sugerencias o dudas desde **Issues**:
+¿Encontraste un error o tienes una idea? Además de tu apartado, puedes reportarlo desde **Issues**:
 
 👉 [**Dejar una observación**](../../issues/new?template=observacion.yml)
 
-1. Entra a la pestaña **Issues** del repositorio y pulsa **New issue**.
-2. Elige **📝 Observación o comentario** y llena el formulario (tipo, parte de la app y descripción).
-3. Si es un error, agrega los pasos para repetirlo y una captura de pantalla.
-4. Pulsa **Submit new issue**. Te avisaré por GitHub cuando lo revise o lo resuelva.
+1. Pulsa **Submit new issue** después de llenar el formulario (tipo, parte de la app y descripción).
+2. Si es un error, agrega los pasos para repetirlo y una captura de pantalla.
+3. Te avisaré por GitHub cuando lo revise o lo resuelva.
 
 Puedes ver todas las observaciones en la pestaña [Issues](../../issues).
 
-## 🧩 Arquitectura
+---
+
+# 🔧 Para desarrolladores
+
+<details>
+<summary><b>🧩 Arquitectura y estructura del proyecto</b></summary>
 
 | Pieza | Servicio |
 |---|---|
@@ -85,56 +152,16 @@ lib/
     └── profile/              Datos personales y equipo de la granja
 assets/images/                Logo e ícono de la app
 supabase/                     Esquema SQL, migraciones y plantilla de correo
+testers/                      Apartado de cada tester
 .github/workflows/            Publicación automática del APK
 ```
 
-## 🧑‍🌾 Cómo funcionan las cuentas y las granjas
+La app ya trae su conexión (solo la clave pública, protegida por RLS), así que quien descargue el APK solo inicia sesión. Cambiar roles se hace solo desde el SQL Editor de Supabase.
 
-- **Registro:** solo correo, nombre y contraseña. Todo queda en la nube ligado a tu cuenta.
-- **Crear una granja** → eres **administrador**. Puedes tener varias y cambiar entre ellas con el botón de la granja en la barra superior.
-- **Unirte con un código** → eres **operador**. El administrador ve el código en **Perfil > Mi granja** y se lo comparte.
-- **Datos separados:** cada granja solo ve sus propios cerdos, corrales, alimentos, consumos y partos.
-- **Equipo:** en **Perfil** cada persona captura nombre, teléfono y puesto; el administrador ve al **Equipo de la granja** y puede quitar operadores.
-- La app ya trae su conexión (solo la clave pública, protegida por RLS), así que quien descargue el APK solo inicia sesión.
+</details>
 
-## 🌽 Alimentación
-
-Cada corral tiene una etapa productiva (**Pre-inicio, Inicio, Desarrollo, Engorda, Gestación, Lactancia**) con una ración sugerida. La ración diaria se calcula sola:
-
-`cerdos activos del corral × ración de su etapa`
-
-Un alimento puede asignarse a una etapa (solo cuenta los corrales de esa etapa) o a todas. Al registrar un consumo, el trigger resta la cantidad del stock y rechaza consumos mayores que la existencia.
-
-## 📋 Reglas de negocio
-
-La base de datos las hace cumplir (la app solo avisa antes):
-
-- Una cerda tiene una sola gestación en curso. Si no llega a parir, se marca como **fallida** desde *Próximos partos* y queda libre para una nueva inseminación.
-- Solo una hembra activa puede inseminarse, y no antes de su nacimiento.
-- El parto real no puede registrarse antes de 100 días de la monta ni en el futuro.
-- Una cerda con gestación en curso no puede cambiar de sexo ni pasar a vendida, fallecida o baja.
-- Un corral no admite más cerdos activos que su capacidad.
-- El peso va de 0 a 500 kg.
-
-## 🔒 Permisos por rol
-
-Todos los integrantes de una misma granja ven los mismos datos; otra granja no. El rol (administrador/operador) es **por granja**.
-
-| Acción | Administrador | Operador |
-|---|:---:|:---:|
-| Cerdos: ver, registrar, editar | ✅ | ✅ |
-| Cerdos: eliminar (o archivar si tiene partos) | ✅ | ❌ |
-| Corrales: ver y cambiar estado | ✅ | ✅ |
-| Corrales: crear, editar datos, eliminar | ✅ | ❌ |
-| Alimentos: ver y registrar consumo | ✅ | ✅ |
-| Alimentos: crear, editar stock, eliminar | ✅ | ❌ |
-| Inseminaciones y partos reales: registrar | ✅ | ✅ |
-| Partos: eliminar | ✅ | ❌ |
-| Etapas productivas: modificar | ❌ (catálogo común) | ❌ |
-| Ver el código de granja e invitar operadores | ✅ | ❌ |
-| Cambiar roles | Solo desde SQL Editor | ❌ |
-
-## 💻 Compilar desde el código
+<details>
+<summary><b>💻 Compilar desde el código</b></summary>
 
 **Requisitos:** [Flutter](https://docs.flutter.dev/get-started/install) y una cuenta gratuita en [Supabase](https://supabase.com) (solo si montas tu propio servidor).
 
@@ -152,7 +179,10 @@ flutter build apk --release
 
 El APK queda en `build/app/outputs/flutter-apk/app-release.apk`.
 
-### 🗃️ Montar tu propio servidor (opcional)
+</details>
+
+<details>
+<summary><b>🗃️ Montar tu propio servidor (opcional)</b></summary>
 
 1. Crea un proyecto gratuito en [supabase.com](https://supabase.com).
 2. En **SQL Editor** pega y ejecuta todo `supabase/setup_completo.sql` (en un proyecto nuevo y vacío: crea tablas, reglas y permisos).
@@ -162,13 +192,16 @@ El APK queda en `build/app/outputs/flutter-apk/app-release.apk`.
 
 > ¿Ya tenías un proyecto con las migraciones anteriores? **No** vuelvas a ejecutar `setup_completo.sql`. Para separar las granjas ejecuta, en este orden, `supabase/respaldo_antes_de_20261003.sql` (copia de seguridad en el esquema `respaldo_20261020`) y `supabase/migrations/20261003_multi_granja.sql`. Tus datos quedan juntos en la «Granja principal» y las cuentas conservan su rol.
 
-### 📧 Correo de recuperación de contraseña (una vez, en Supabase)
+**Correo de recuperación de contraseña (una vez, en Supabase):**
 
 1. **Authentication > Emails > Templates > Reset Password**: reemplaza el contenido por algo como `<h2>Recupera tu contraseña</h2><p>Tu código es: <b>{{ .Token }}</b></p>` (hay una plantilla lista en `supabase/plantilla_correo_recuperar.html`).
 2. **Authentication > Sign In / Providers > Email**: sube «Minimum password length» a 8 y activa «Leaked password protection» si tu plan lo permite.
 3. El correo de pruebas de Supabase tiene pocos mensajes por hora. Para uso real configura un SMTP propio en **Authentication > SMTP Settings**.
 
-## 📦 Publicar el APK en GitHub Releases
+</details>
+
+<details>
+<summary><b>📦 Publicar el APK en GitHub Releases</b></summary>
 
 La app usa el identificador `mx.utvm.porcinotech` (se cambia en `android/app/build.gradle.kts`, línea `applicationId`; cámbialo **antes** de la primera publicación, porque después Android lo trata como otra app).
 
@@ -176,13 +209,15 @@ La app usa el identificador `mx.utvm.porcinotech` (se cambia en `android/app/bui
    ```powershell
    keytool -genkey -v -keystore porcinotech.jks -keyalg RSA -keysize 2048 -validity 10000 -alias porcinotech
    ```
-2. **Automático con GitHub:** en *Settings > Secrets and variables > Actions* crea `ANDROID_KEYSTORE_BASE64` (el `.jks` en base64: `[Convert]::ToBase64String([IO.File]::ReadAllBytes("porcinotech.jks"))`), `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS` y `ANDROID_KEY_PASSWORD`. Luego sube una etiqueta:
+2. **Automático con GitHub:** en *Settings > Secrets and variables > Actions* crea `ANDROID_KEYSTORE_BASE64` (el `.jks` en base64: `[Convert]::ToBase64String([IO.File]::ReadAllBytes("porcinotech.jks"))`), `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS` y `ANDROID_KEY_PASSWORD`. Luego sube una etiqueta nueva (por ejemplo `v1.0.2`):
    ```powershell
-   git tag v1.0.0
-   git push origin v1.0.0
+   git tag v1.0.2
+   git push origin v1.0.2
    ```
    El flujo `.github/workflows/release.yml` construye el APK y lo adjunta al Release como `PorcinoTech.apk`.
 3. **A mano:** crea `android/key.properties` con `storeFile`, `storePassword`, `keyAlias` y `keyPassword` y ejecuta `flutter build apk --release`.
+
+</details>
 
 ---
 
