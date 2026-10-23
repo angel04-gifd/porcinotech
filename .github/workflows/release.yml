@@ -14,6 +14,10 @@ permissions:
 jobs:
   apk:
     runs-on: ubuntu-latest
+    env:
+      # Token con permiso de escritura sobre el repositorio público de descargas.
+      # Si no existe el secreto PUBLIC_RELEASE_TOKEN, ese paso se omite.
+      PUBLIC_RELEASE_TOKEN: ${{ secrets.PUBLIC_RELEASE_TOKEN }}
     steps:
       - uses: actions/checkout@v4
 
@@ -60,6 +64,19 @@ jobs:
         with:
           files: PorcinoTech.apk
           generate_release_notes: true
+
+      # Copia el APK al repositorio público (solo APK y README, sin código)
+      # para que los usuarios lo descarguen sin ver el código fuente.
+      - uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/') && env.PUBLIC_RELEASE_TOKEN != ''
+        with:
+          repository: angel04-gifd/porcinotech-app
+          token: ${{ env.PUBLIC_RELEASE_TOKEN }}
+          files: PorcinoTech.apk
+          name: PorcinoTech ${{ github.ref_name }}
+          body: |
+            Descarga **PorcinoTech.apk** en "Assets", ábrelo en tu Android e instálalo.
+            Pasos de instalación en el [README](https://github.com/angel04-gifd/porcinotech-app#readme).
 
       - uses: actions/upload-artifact@v4
         with:
