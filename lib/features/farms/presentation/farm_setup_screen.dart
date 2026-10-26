@@ -5,8 +5,9 @@ import 'package:go_router/go_router.dart';
 import '../../../main.dart' show RestartWidget;
 import '../../auth/data/auth_repository.dart';
 
-/// Elegir granja: crear una nueva (quedas como administrador) o unirte con el
-/// código que te dio un administrador (quedas como operador).
+/// Elegir granja: el administrador autorizado crea una nueva; todas las demás
+/// cuentas se unen con el código que les dio un administrador (y quedan como
+/// operadores).
 class FarmSetupScreen extends ConsumerStatefulWidget {
   const FarmSetupScreen({super.key});
   @override
@@ -50,8 +51,11 @@ class _FarmSetupScreenState extends ConsumerState<FarmSetupScreen> {
   @override
   Widget build(BuildContext context) {
     final hasFarm = ref.watch(currentFarmProvider) != null;
-    final canCreate = ref.watch(puedeCrearGranjaProvider);
-    final canJoin = ref.watch(puedeUnirseGranjaProvider);
+    // Solo el administrador autorizado puede crear granjas; los demás se unen
+    // con un código y entran como operadores.
+    final checking = ref.watch(adminAutorizadoProvider).isLoading;
+    final canCreate = !checking && ref.watch(puedeCrearGranjaProvider);
+    final canJoin = !checking && ref.watch(puedeUnirseGranjaProvider);
     final repo = ref.read(authRepositoryProvider);
     return Scaffold(
       appBar: AppBar(
@@ -80,7 +84,9 @@ class _FarmSetupScreenState extends ConsumerState<FarmSetupScreen> {
                 Text(
                   hasFarm
                       ? (canCreate ? 'Agrega otra granja' : 'Únete a otra granja')
-                      : '¡Bienvenido! ¿Cómo vas a usar PorcinoTech?',
+                      : (canCreate
+                            ? '¡Bienvenido! ¿Cómo vas a usar PorcinoTech?'
+                            : '¡Bienvenido! Únete a tu granja con el código que te dio tu administrador.'),
                   style: Theme.of(context).textTheme.titleMedium,
                   textAlign: TextAlign.center,
                 ),
@@ -168,7 +174,7 @@ class _FarmSetupScreenState extends ConsumerState<FarmSetupScreen> {
                     textAlign: TextAlign.center,
                   ),
                 ],
-                if (_busy)
+                if (_busy || checking)
                   const Padding(
                     padding: EdgeInsets.only(top: 16),
                     child: CircularProgressIndicator(),

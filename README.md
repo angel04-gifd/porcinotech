@@ -49,9 +49,9 @@ Hecha con **Flutter + Supabase**. No necesitas configurar nada: instalas la app,
 
 ## 🧑‍🌾 Cuentas y granjas
 
-- **Registro:** solo correo, nombre y contraseña. Todo queda en la nube ligado a tu cuenta.
-- **Crear una granja** → eres **administrador**. Puedes tener varias y cambiar entre ellas con el botón de la granja en la barra superior.
-- **Unirte con un código** → eres **operador**. El administrador ve el código en **Perfil > Mi granja** y se lo comparte.
+- **Registro:** con correo y contraseña, o con **Continuar con Google**. Todo queda en la nube ligado a tu cuenta.
+- **Unirte con un código** → eres **operador**. Todas las cuentas nuevas entran así: el administrador ve el código en **Perfil > Mi granja** y se lo comparte.
+- **Crear una granja** → solo la cuenta del **administrador autorizado** puede hacerlo. Puede tener varias y cambiar entre ellas con el botón de la granja en la barra superior.
 - **Datos separados:** cada granja solo ve sus propios cerdos, corrales, alimentos, consumos y partos.
 - **Equipo:** en **Perfil** cada persona captura nombre, teléfono y puesto; el administrador ve al **Equipo de la granja** y puede quitar operadores.
 
@@ -191,6 +191,15 @@ El APK queda en `build/app/outputs/flutter-apk/app-release.apk`.
 5. Pon esos datos en `lib/core/config/app_config.dart` o compílala con `--dart-define-from-file=env.json`.
 
 > ¿Ya tenías un proyecto con las migraciones anteriores? **No** vuelvas a ejecutar `setup_completo.sql`. Para separar las granjas ejecuta, en este orden, `supabase/respaldo_antes_de_20261003.sql` (copia de seguridad en el esquema `respaldo_20261020`) y `supabase/migrations/20261003_multi_granja.sql`. Tus datos quedan juntos en la «Granja principal» y las cuentas conservan su rol.
+
+> 🔐 **Solo un administrador.** `supabase/migrations/20261026_solo_un_administrador.sql` hace que únicamente los correos de la tabla `administradores_autorizados` puedan crear granjas; todas las demás cuentas (correo o Google) entran como operadores. Si tu proyecto ya existe, ejecútala en el **SQL Editor** (en uno nuevo ya viene en `setup_completo.sql`). Antes, cambia en ella el correo `jovmez0409@gmail.com` por el de tu cuenta. La regla vive en la base de datos, así que también protege a las versiones viejas de la app.
+
+**Inicio de sesión con Google (una vez, en Google Cloud y Supabase):**
+
+1. En [Google Cloud Console](https://console.cloud.google.com/apis/credentials) crea unas credenciales **ID de cliente de OAuth** de tipo **Aplicación web**. En «URI de redireccionamiento autorizados» pon `https://<tu-proyecto>.supabase.co/auth/v1/callback` (Supabase la muestra en el paso 2). Configura antes la «Pantalla de consentimiento de OAuth».
+2. En Supabase: **Authentication > Sign In / Providers > Google**: actívalo y pega el **Client ID** y el **Client secret**.
+3. En Supabase: **Authentication > URL Configuration > Redirect URLs**: agrega `io.supabase.porcinotech://login-callback/`.
+4. Si usas la misma cuenta de correo con contraseña y con Google, Supabase las une como una sola cuenta porque Google confirma el correo.
 
 **Correo de recuperación de contraseña (una vez, en Supabase):**
 

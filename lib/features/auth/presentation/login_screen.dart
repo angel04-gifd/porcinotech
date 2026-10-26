@@ -173,6 +173,35 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 : () => context.go('/recuperar'),
                             child: const Text('¿Olvidaste tu contraseña?'),
                           ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            const Expanded(child: Divider()),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                              ),
+                              child: Text(
+                                'o',
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                            ),
+                            const Expanded(child: Divider()),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        OutlinedButton.icon(
+                          onPressed: isLoading
+                              ? null
+                              : () => ref
+                                    .read(authControllerProvider.notifier)
+                                    .signInWithGoogle(),
+                          icon: const Icon(Icons.g_mobiledata, size: 28),
+                          label: const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 12),
+                            child: Text('Continuar con Google'),
+                          ),
+                        ),
                         TextButton(
                           onPressed: isLoading
                               ? null

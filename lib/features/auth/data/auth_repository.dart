@@ -62,12 +62,26 @@ final tipoCuentaProvider = Provider<String?>((ref) {
   final profile = ref.watch(currentProfileProvider).valueOrNull;
   return profile?['tipo_cuenta'] as String?;
 });
-final puedeCrearGranjaProvider = Provider<bool>(
-  (ref) => ref.watch(tipoCuentaProvider) != 'operador',
-);
-final puedeUnirseGranjaProvider = Provider<bool>(
-  (ref) => ref.watch(tipoCuentaProvider) != 'admin',
-);
+
+/// ¿Esta cuenta es la del administrador autorizado? Solo ella puede crear
+/// granjas; todas las demás entran como operadores. La regla real la hace la
+/// base de datos (crear_granja); esto solo evita mostrar opciones que fallarían.
+/// Si no se puede consultar, se asume que NO (la opción segura).
+final adminAutorizadoProvider = FutureProvider.autoDispose<bool>((ref) async {
+  ref.watch(authStateProvider);
+  final client = ref.watch(supabaseClientProvider);
+  if (client.auth.currentSession == null) return false;
+  final result = await client.rpc('soy_admin_autorizado');
+  return result == true;
+});
+final puedeCrearGranjaProvider = Provider<bool>((ref) {
+  final autorizado = ref.watch(adminAutorizadoProvider).valueOrNull ?? false;
+  return autorizado && ref.watch(tipoCuentaProvider) != 'operador';
+});
+final puedeUnirseGranjaProvider = Provider<bool>((ref) {
+  final autorizado = ref.watch(adminAutorizadoProvider).valueOrNull ?? false;
+  return !autorizado;
+});
 
 /// Texto del acceso para agregar otra granja según el tipo de cuenta.
 String textoAgregarGranja(bool puedeCrear, bool puedeUnirse) {
@@ -152,6 +166,25 @@ class AuthRepository {
           : null,
     );
     return response.session == null;
+  }
+
+  /// Dirección a la que Google devuelve a la app (debe estar en Supabase, en
+  /// Authentication > URL Configuration > Redirect URLs, y en AndroidManifest).
+  static const googleRedirectUrl = 'io.supabase.porcinotech://login-callback/';
+
+  /// Abre el inicio de sesión de Google en el navegador. La sesión llega
+  /// después, cuando Google regresa a la app por [googleRedirectUrl].
+  /// Las cuentas nuevas siempre nacen como operador (lo hace la base de datos).
+  Future<void> signInWithGoogle() async {
+    final opened = await _client.auth.signInWithOAuth(
+      OAuthProvider.google,
+      redirectTo: googleRedirectUrl,
+    );
+    if (!opened) {
+      throw const AuthException(
+        'No se pudo abrir el inicio de sesión con Google.',
+      );
+    }
   }
 
   Future<void> crearGranja(String nombre) =>
