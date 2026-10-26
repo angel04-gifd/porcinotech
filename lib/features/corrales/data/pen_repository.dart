@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../core/supabase/resilient_stream.dart';
 import '../../../core/supabase/supabase_client.dart';
 
 final penRepositoryProvider = Provider<PenRepository>(
@@ -16,8 +17,12 @@ class PenRepository {
 
   final SupabaseClient _client;
 
-  Stream<List<Map<String, dynamic>>> watchPens() =>
-      _client.from('corrales').stream(primaryKey: ['id']).order('nombre');
+  Stream<List<Map<String, dynamic>>> watchPens() => resilientStream(
+    client: _client,
+    fetch: () => _client.from('corrales').select().order('nombre'),
+    realtime: () =>
+        _client.from('corrales').stream(primaryKey: ['id']).order('nombre'),
+  );
 
   Future<void> createPen({
     required String nombre,

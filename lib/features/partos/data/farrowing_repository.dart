@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../core/supabase/resilient_stream.dart';
 import '../../../core/supabase/supabase_client.dart';
 
 const gestationDays = 114; // 3 meses, 3 semanas y 3 días.
@@ -54,10 +55,14 @@ class FarrowingRepository {
 
   final SupabaseClient _client;
 
-  Stream<List<Map<String, dynamic>>> watchFarrowings() => _client
-      .from('partos')
-      .stream(primaryKey: ['id'])
-      .order('fecha_estimada_parto');
+  Stream<List<Map<String, dynamic>>> watchFarrowings() => resilientStream(
+    client: _client,
+    fetch: () => _client.from('partos').select().order('fecha_estimada_parto'),
+    realtime: () => _client
+        .from('partos')
+        .stream(primaryKey: ['id'])
+        .order('fecha_estimada_parto'),
+  );
 
   Future<void> createFarrowing({
     required String sowId,

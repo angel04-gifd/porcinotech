@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/config/app_config.dart';
+import '../../../core/supabase/resilient_stream.dart';
 import '../../../core/supabase/supabase_client.dart';
 
 final authRepositoryProvider = Provider<AuthRepository>(
@@ -20,12 +21,17 @@ final currentProfileProvider = StreamProvider<Map<String, dynamic>?>((ref) {
   final authState = ref.watch(authStateProvider).valueOrNull;
   final userId = authState?.session?.user.id;
   if (userId == null) return Stream.value(null);
-  return ref
-      .watch(supabaseClientProvider)
-      .from('perfiles')
-      .stream(primaryKey: ['user_id'])
-      .eq('user_id', userId)
-      .map((profiles) => profiles.isEmpty ? null : profiles.first);
+  final client = ref.watch(supabaseClientProvider);
+  return resilientStream<Map<String, dynamic>?>(
+    client: client,
+    fetch: () =>
+        client.from('perfiles').select().eq('user_id', userId).maybeSingle(),
+    realtime: () => client
+        .from('perfiles')
+        .stream(primaryKey: ['user_id'])
+        .eq('user_id', userId)
+        .map((profiles) => profiles.isEmpty ? null : profiles.first),
+  );
 });
 /// Granjas a las que pertenece el usuario (id, nombre, rol, codigo_invitacion
 /// —solo si es administrador— y activa). Vacío si la migración

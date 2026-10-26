@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/widgets/error_view.dart';
 import '../../alimentos/data/feed_plan.dart';
 import '../../alimentos/data/food_repository.dart';
 import '../../alimentos/data/production_stage_repository.dart';
@@ -129,11 +130,27 @@ class DashboardScreen extends ConsumerWidget {
           const SizedBox(height: 12),
           const WeatherCard(),
           const SizedBox(height: 12),
-          _buildFeedBalance(context, foods, feedPlan),
+          _buildFeedBalance(
+            context,
+            foods,
+            feedPlan,
+            onRetry: () => ref.invalidate(foodsProvider),
+          ),
           const SizedBox(height: 12),
-          _buildConsumptionChart(context, feedRecords, foods, stageNames),
+          _buildConsumptionChart(
+            context,
+            feedRecords,
+            foods,
+            stageNames,
+            onRetry: () => ref.invalidate(feedRecordsProvider),
+          ),
           const SizedBox(height: 12),
-          _buildUpcomingBirths(context, farrowings, pigs),
+          _buildUpcomingBirths(
+            context,
+            farrowings,
+            pigs,
+            onRetry: () => ref.invalidate(farrowingsProvider),
+          ),
         ],
       ),
     );
@@ -142,11 +159,17 @@ class DashboardScreen extends ConsumerWidget {
   Widget _buildFeedBalance(
     BuildContext context,
     AsyncValue<List<Map<String, dynamic>>> foods,
-    AsyncValue<FeedPlan> feedPlan,
-  ) => foods.when(
+    AsyncValue<FeedPlan> feedPlan, {
+    required VoidCallback onRetry,
+  }) => foods.when(
     loading: () => const LinearProgressIndicator(),
     error: (error, _) => Card(
-      child: ListTile(title: Text('No se pudo calcular el balance: $error')),
+      child: ErrorView(
+        compact: true,
+        title: 'No se pudo calcular el balance',
+        error: error,
+        onRetry: onRetry,
+      ),
     ),
     data: (rows) {
       final stock = rows.fold<double>(
@@ -176,8 +199,9 @@ class DashboardScreen extends ConsumerWidget {
     BuildContext context,
     AsyncValue<List<Map<String, dynamic>>> records,
     AsyncValue<List<Map<String, dynamic>>> foods,
-    Map<String, String> stageNames,
-  ) => records.when(
+    Map<String, String> stageNames, {
+    required VoidCallback onRetry,
+  }) => records.when(
     loading: () => const Card(
       child: SizedBox(
         height: 180,
@@ -185,7 +209,12 @@ class DashboardScreen extends ConsumerWidget {
       ),
     ),
     error: (error, _) => Card(
-      child: ListTile(title: Text('No se pudo cargar el consumo: $error')),
+      child: ErrorView(
+        compact: true,
+        title: 'No se pudo cargar el consumo',
+        error: error,
+        onRetry: onRetry,
+      ),
     ),
     data: (rows) {
       final theme = Theme.of(context);
@@ -216,11 +245,17 @@ class DashboardScreen extends ConsumerWidget {
   Widget _buildUpcomingBirths(
     BuildContext context,
     AsyncValue<List<Map<String, dynamic>>> farrowings,
-    AsyncValue<List<Map<String, dynamic>>> pigs,
-  ) => farrowings.when(
+    AsyncValue<List<Map<String, dynamic>>> pigs, {
+    required VoidCallback onRetry,
+  }) => farrowings.when(
     loading: () => const LinearProgressIndicator(),
     error: (error, _) => Card(
-      child: ListTile(title: Text('No se pudieron cargar los partos: $error')),
+      child: ErrorView(
+        compact: true,
+        title: 'No se pudieron cargar los partos',
+        error: error,
+        onRetry: onRetry,
+      ),
     ),
     data: (rows) {
       final pigsById = {

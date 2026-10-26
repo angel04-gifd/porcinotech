@@ -3,6 +3,7 @@ import 'dart:math' show max;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../core/supabase/resilient_stream.dart';
 import '../../../core/supabase/supabase_client.dart';
 
 final pigRepositoryProvider = Provider<PigRepository>(
@@ -18,10 +19,17 @@ class PigRepository {
 
   final SupabaseClient _client;
 
-  Stream<List<Map<String, dynamic>>> watchPigs() => _client
-      .from('cerdos')
-      .stream(primaryKey: ['id'])
-      .order('created_at', ascending: false);
+  Stream<List<Map<String, dynamic>>> watchPigs() => resilientStream(
+    client: _client,
+    fetch: () => _client
+        .from('cerdos')
+        .select()
+        .order('created_at', ascending: false),
+    realtime: () => _client
+        .from('cerdos')
+        .stream(primaryKey: ['id'])
+        .order('created_at', ascending: false),
+  );
 
   /// Siguiente arete consecutivo de 4 dígitos ("0001", "0002", …).
   static String nextEarTag(Iterable<String> existing) {

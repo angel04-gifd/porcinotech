@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/widgets/error_view.dart';
 import '../../auth/data/auth_repository.dart';
 import '../../cerdos/data/pig_repository.dart';
 import '../data/farrowing_repository.dart';
@@ -67,12 +68,18 @@ class UpcomingFarrowingsScreen extends ConsumerWidget {
       ),
       body: farrowings.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) =>
-            Center(child: Text('No se pudieron cargar los partos: $error')),
+        error: (error, _) => ErrorView(
+          title: 'No se pudieron cargar los partos',
+          error: error,
+          onRetry: () => ref.invalidate(farrowingsProvider),
+        ),
         data: (rows) => pigs.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, _) =>
-              Center(child: Text('No se pudieron cargar las cerdas: $error')),
+          error: (error, _) => ErrorView(
+            title: 'No se pudieron cargar las cerdas',
+            error: error,
+            onRetry: () => ref.invalidate(pigsProvider),
+          ),
           data: (pigRows) {
             final pigsById = {
               for (final pig in pigRows) pig['id'] as String: pig,

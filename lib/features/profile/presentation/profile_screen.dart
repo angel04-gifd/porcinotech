@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/widgets/error_view.dart';
 import '../../auth/data/auth_repository.dart';
 import '../../auth/presentation/auth_controller.dart';
 import '../../farms/presentation/farm_picker.dart';
@@ -147,7 +148,8 @@ class ProfileScreen extends ConsumerWidget {
                   title: const Text('Rol en esta granja'),
                   subtitle: role.when(
                     loading: () => const Text('Cargando rol...'),
-                    error: (error, _) => Text('No se pudo validar el rol: $error'),
+                    error: (error, _) =>
+                        Text('No se pudo validar el rol. ${friendlyError(error)}'),
                     data: (value) => Text(
                       value == 'admin'
                           ? 'Administrador'

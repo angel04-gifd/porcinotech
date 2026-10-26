@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/widgets/error_view.dart';
 import '../../auth/data/auth_repository.dart';
 import '../../corrales/data/pen_repository.dart';
 import '../../partos/data/farrowing_repository.dart';
@@ -125,8 +126,11 @@ class CerdosScreen extends ConsumerWidget {
           .watch(pigsProvider)
           .when(
             loading: () => const Center(child: CircularProgressIndicator()),
-            error: (error, _) =>
-                Center(child: Text('No se pudieron cargar los cerdos: $error')),
+            error: (error, _) => ErrorView(
+              title: 'No se pudieron cargar los cerdos',
+              error: error,
+              onRetry: () => ref.invalidate(pigsProvider),
+            ),
             data: (rows) {
               if (rows.isEmpty) {
                 return const Center(
@@ -446,8 +450,12 @@ class _PigFormState extends ConsumerState<_PigForm> {
                 ),
                 pens.when(
                   loading: () => const LinearProgressIndicator(),
-                  error: (error, _) =>
-                      Text('No se pudieron cargar los corrales: $error'),
+                  error: (error, _) => ErrorView(
+                    compact: true,
+                    title: 'No se pudieron cargar los corrales',
+                    error: error,
+                    onRetry: () => ref.invalidate(pensProvider),
+                  ),
                   data: (rows) => DropdownButtonFormField<String?>(
                     initialValue: rows.any((pen) => pen['id'] == _corral)
                         ? _corral

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/widgets/error_view.dart';
 import '../../cerdos/data/pig_repository.dart';
 import '../data/farrowing_repository.dart';
 
@@ -139,7 +140,12 @@ class _PartosScreenState extends ConsumerState<PartosScreen> {
     AsyncValue<List<Map<String, dynamic>>> pigs,
   ) => farrowings.when(
     loading: () => const Center(child: CircularProgressIndicator()),
-    error: (error, _) => Text('No se pudo cargar el calendario: $error'),
+    error: (error, _) => ErrorView(
+      compact: true,
+      title: 'No se pudo cargar el calendario',
+      error: error,
+      onRetry: () => ref.invalidate(farrowingsProvider),
+    ),
     data: (rows) {
       final pigsById = {
         for (final pig in pigs.valueOrNull ?? <Map<String, dynamic>>[])
@@ -403,7 +409,12 @@ class _PartosScreenState extends ConsumerState<PartosScreen> {
         ),
         pigs.when(
           loading: () => const LinearProgressIndicator(),
-          error: (error, _) => Text('No se pudieron cargar las cerdas: $error'),
+          error: (error, _) => ErrorView(
+            compact: true,
+            title: 'No se pudieron cargar las cerdas',
+            error: error,
+            onRetry: () => ref.invalidate(pigsProvider),
+          ),
           data: (pigs) {
             final farrowingRows =
                 farrowings.valueOrNull ?? <Map<String, dynamic>>[];

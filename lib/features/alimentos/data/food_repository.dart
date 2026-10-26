@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../core/supabase/resilient_stream.dart';
 import '../../../core/supabase/supabase_client.dart';
 
 final foodRepositoryProvider = Provider<FoodRepository>(
@@ -20,16 +21,28 @@ class FoodRepository {
 
   final SupabaseClient _client;
 
-  Stream<List<Map<String, dynamic>>> watchFoods() =>
-      _client.from('alimentos').stream(primaryKey: ['id']).order('nombre');
+  Stream<List<Map<String, dynamic>>> watchFoods() => resilientStream(
+    client: _client,
+    fetch: () => _client.from('alimentos').select().order('nombre'),
+    realtime: () =>
+        _client.from('alimentos').stream(primaryKey: ['id']).order('nombre'),
+  );
 
   Stream<List<Map<String, dynamic>>> watchFeedRecords() {
-    final since = DateTime.now().subtract(const Duration(days: 6));
-    return _client
-        .from('consumos')
-        .stream(primaryKey: ['id'])
-        .gte('fecha', _dateOnly(since))
-        .order('fecha', ascending: false);
+    final since = _dateOnly(DateTime.now().subtract(const Duration(days: 6)));
+    return resilientStream(
+      client: _client,
+      fetch: () => _client
+          .from('consumos')
+          .select()
+          .gte('fecha', since)
+          .order('fecha', ascending: false),
+      realtime: () => _client
+          .from('consumos')
+          .stream(primaryKey: ['id'])
+          .gte('fecha', since)
+          .order('fecha', ascending: false),
+    );
   }
 
   Future<void> createFood({

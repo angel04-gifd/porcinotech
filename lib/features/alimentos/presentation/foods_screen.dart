@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/widgets/error_view.dart';
 import '../../auth/data/auth_repository.dart';
 import '../data/feed_plan.dart';
 import '../data/food_repository.dart';
@@ -29,8 +30,11 @@ class FoodsScreen extends ConsumerWidget {
     return Scaffold(
       body: foods.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) =>
-            Center(child: Text('No se pudieron cargar los alimentos: $error')),
+        error: (error, _) => ErrorView(
+          title: 'No se pudieron cargar los alimentos',
+          error: error,
+          onRetry: () => ref.invalidate(foodsProvider),
+        ),
         data: (items) => items.isEmpty
             ? Center(
                 child: Text(

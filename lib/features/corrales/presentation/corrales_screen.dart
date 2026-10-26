@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/widgets/error_view.dart';
 import '../../alimentos/data/feed_plan.dart';
 import '../../alimentos/data/production_stage_repository.dart';
 import '../../auth/data/auth_repository.dart';
@@ -99,12 +100,18 @@ class CorralesScreen extends ConsumerWidget {
     return Scaffold(
       body: pensState.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) =>
-            Center(child: Text('No se pudieron cargar los corrales: $error')),
+        error: (error, _) => ErrorView(
+          title: 'No se pudieron cargar los corrales',
+          error: error,
+          onRetry: () => ref.invalidate(pensProvider),
+        ),
         data: (pens) => pigsState.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, _) =>
-              Center(child: Text('No se pudo cargar la ocupación: $error')),
+          error: (error, _) => ErrorView(
+            title: 'No se pudo cargar la ocupación',
+            error: error,
+            onRetry: () => ref.invalidate(pigsProvider),
+          ),
           data: (allPigs) {
             final pigs = allPigs.where(isActivePig).toList();
             if (pens.isEmpty) {
