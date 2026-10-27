@@ -126,9 +126,7 @@ class _PartosScreenState extends ConsumerState<PartosScreen> {
       }
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('No se pudo registrar el parto: $error')),
-        );
+        showErrorSnackBar(context, 'No se pudo registrar el parto', error);
       }
     } finally {
       if (mounted) setState(() => _saving = false);

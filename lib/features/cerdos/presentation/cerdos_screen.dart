@@ -104,9 +104,7 @@ class CerdosScreen extends ConsumerWidget {
       );
     } catch (error) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('No se pudo eliminar el cerdo: $error')),
-        );
+        showErrorSnackBar(context, 'No se pudo eliminar el cerdo', error);
       }
     }
   }
@@ -384,9 +382,7 @@ class _PigFormState extends ConsumerState<_PigForm> {
       if (mounted) Navigator.pop(context);
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('No se pudo guardar el cerdo: $error')),
-        );
+        showErrorSnackBar(context, 'No se pudo guardar el cerdo', error);
       }
     } finally {
       if (mounted) setState(() => _saving = false);

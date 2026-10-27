@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:porcinotech/core/supabase/resilient_stream.dart';
 import 'package:porcinotech/core/widgets/error_view.dart';
 
@@ -26,5 +27,53 @@ void main() {
     final message = friendlyError(StateError('algo raro'));
     expect(message, isNot(contains('StateError')));
     expect(message, contains('inesperado'));
+  });
+
+  group('errores de la base de datos', () {
+    test('un "no existe" se explica sin mostrar la excepción', () {
+      final text = friendlyError(
+        const PostgrestException(
+          message: 'El cerdo solicitado no existe.',
+          code: 'P0002',
+          details: 'Internal Server Error',
+        ),
+      );
+      expect(text, contains('El cerdo solicitado no existe.'));
+      expect(text, contains('otra granja'));
+      expect(text, isNot(contains('PostgrestException')));
+      expect(text, isNot(contains('P0002')));
+    });
+
+    test('las reglas de negocio se muestran tal cual, en español', () {
+      expect(
+        friendlyError(
+          const PostgrestException(
+            message: 'Stock insuficiente. Disponible: 5 kg.',
+            code: 'P0001',
+          ),
+        ),
+        'Stock insuficiente. Disponible: 5 kg.',
+      );
+    });
+
+    test('un error técnico desconocido no se muestra en crudo', () {
+      final text = friendlyError(
+        const PostgrestException(message: 'syntax error at or near "x"', code: '42601'),
+      );
+      expect(text, isNot(contains('syntax')));
+      expect(text, contains('Inténtalo de nuevo'));
+    });
+
+    test('un permiso denegado por seguridad de filas se explica', () {
+      expect(
+        friendlyError(
+          const PostgrestException(
+            message: 'new row violates row-level security policy',
+            code: '42501',
+          ),
+        ),
+        contains('rol'),
+      );
+    });
   });
 }

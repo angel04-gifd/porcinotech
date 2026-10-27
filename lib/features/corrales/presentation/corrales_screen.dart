@@ -47,9 +47,7 @@ class CorralesScreen extends ConsumerWidget {
       await action();
     } catch (error) {
       if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('$errorPrefix: $error')));
+        showErrorSnackBar(context, errorPrefix, error);
       }
     }
   }
@@ -362,9 +360,7 @@ class _PenFormState extends ConsumerState<_PenForm> {
       if (mounted) Navigator.pop(context);
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('No se pudo guardar el corral: $error')),
-        );
+        showErrorSnackBar(context, 'No se pudo guardar el corral', error);
       }
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -416,7 +412,7 @@ class _PenFormState extends ConsumerState<_PenForm> {
                     child: LinearProgressIndicator(),
                   ),
                   error: (error, _) => Text(
-                    'No se cargaron las etapas. ¿Ejecutaste la migración 20260930? $error',
+                    'No se cargaron las etapas. ${friendlyError(error)}',
                   ),
                   data: (rows) => DropdownButtonFormField<String>(
                     initialValue: rows.any((stage) => stage['etapa'] == _stage)

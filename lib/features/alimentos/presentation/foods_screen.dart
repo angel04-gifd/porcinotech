@@ -219,9 +219,7 @@ class FoodsScreen extends ConsumerWidget {
       await ref.read(foodRepositoryProvider).deleteFood(food['id'] as String);
     } catch (error) {
       if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('No se pudo eliminar: $error')));
+        showErrorSnackBar(context, 'No se pudo eliminar', error);
       }
     }
   }
@@ -328,9 +326,7 @@ class _FoodFormState extends ConsumerState<_FoodForm> {
       if (mounted) Navigator.pop(context);
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('No se pudo guardar el alimento: $error')),
-        );
+        showErrorSnackBar(context, 'No se pudo guardar el alimento', error);
       }
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -374,7 +370,7 @@ class _FoodFormState extends ConsumerState<_FoodForm> {
                 stages.when(
                   loading: () => const LinearProgressIndicator(),
                   error: (error, _) =>
-                      Text('No se cargaron las etapas: $error'),
+                      Text('No se cargaron las etapas. ${friendlyError(error)}'),
                   data: (rows) => DropdownButtonFormField<String?>(
                     initialValue: _stage,
                     decoration: const InputDecoration(
@@ -501,9 +497,7 @@ class _ConsumptionFormState extends ConsumerState<_ConsumptionForm> {
       if (mounted) Navigator.pop(context);
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('No se pudo registrar el consumo: $error')),
-        );
+        showErrorSnackBar(context, 'No se pudo registrar el consumo', error);
       }
     } finally {
       if (mounted) setState(() => _saving = false);

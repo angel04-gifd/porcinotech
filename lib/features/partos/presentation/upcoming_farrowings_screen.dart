@@ -41,9 +41,7 @@ class UpcomingFarrowingsScreen extends ConsumerWidget {
           .deleteFarrowing(farrowing['id'] as String);
     } catch (error) {
       if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('No se pudo eliminar: $error')));
+        showErrorSnackBar(context, 'No se pudo eliminar', error);
       }
     }
   }
@@ -212,9 +210,7 @@ class _BirthFormState extends ConsumerState<_BirthForm> {
       if (mounted) Navigator.pop(context);
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('No se pudo actualizar: $error')),
-        );
+        showErrorSnackBar(context, 'No se pudo actualizar', error);
       }
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -236,9 +232,7 @@ class _BirthFormState extends ConsumerState<_BirthForm> {
       if (mounted) Navigator.pop(context);
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('No se pudo registrar el parto: $error')),
-        );
+        showErrorSnackBar(context, 'No se pudo registrar el parto', error);
       }
     } finally {
       if (mounted) setState(() => _saving = false);
