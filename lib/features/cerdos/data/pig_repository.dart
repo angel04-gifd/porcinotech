@@ -39,6 +39,9 @@ class PigRepository {
     return (highest + 1).toString().padLeft(4, '0');
   }
 
+  /// Arete que se asignaría ahora, consultando la base (no solo la lista en memoria).
+  Future<String> previewNextEarTag() => _nextEarTagFromDb();
+
   Future<String> _nextEarTagFromDb() async {
     final rows = await _client.from('cerdos').select('arete');
     return nextEarTag(rows.map((row) => row['arete'] as String));

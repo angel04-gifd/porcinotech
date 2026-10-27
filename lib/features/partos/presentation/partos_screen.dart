@@ -500,7 +500,9 @@ class _PartosScreenState extends ConsumerState<PartosScreen> {
         ),
         const SizedBox(height: 16),
         FilledButton(
-          onPressed: _saving ? null : _save,
+          onPressed: _saving || _sow == null || _mating == null
+              ? null
+              : _save,
           child: _saving
               ? const SizedBox.square(
                   dimension: 20,

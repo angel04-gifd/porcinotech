@@ -309,7 +309,28 @@ class ProfileScreen extends ConsumerWidget {
         ),
         const SizedBox(height: 24),
         OutlinedButton.icon(
-          onPressed: () => ref.read(authControllerProvider.notifier).signOut(),
+          onPressed: () async {
+            final confirmar = await showDialog<bool>(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: const Text('Cerrar sesión'),
+                content: const Text('¿Seguro que quieres cerrar sesión?'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    child: const Text('Cancelar'),
+                  ),
+                  FilledButton(
+                    onPressed: () => Navigator.pop(context, true),
+                    child: const Text('Cerrar sesión'),
+                  ),
+                ],
+              ),
+            );
+            if (confirmar == true) {
+              await ref.read(authControllerProvider.notifier).signOut();
+            }
+          },
           icon: const Icon(Icons.logout),
           label: const Text('Cerrar sesión'),
         ),

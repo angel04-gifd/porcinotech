@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -30,20 +31,33 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final loggedIn = authState.valueOrNull?.session != null;
       if (!loggedIn && location == '/recuperar') return null;
       if (!loggedIn && !isLogin) return '/login';
-      if (loggedIn && isLogin) return '/dashboard';
+      if (!loggedIn) return null;
+
+      // Con sesión, hay que saber si la cuenta ya tiene granja ANTES de mostrar
+      // el inicio; si no, la pantalla principal aparece unos segundos y luego
+      // salta a elegir administrador u operador.
+      final profileState = ref.read(currentProfileProvider);
+      final profile = profileState.valueOrNull;
+      if (profileState.isLoading && profile == null && location != '/recuperar') {
+        return location == '/cargando' ? null : '/cargando';
+      }
       // Sin granja activa (cuenta nueva) toca crear una o unirse con código.
-      final profile = ref.read(currentProfileProvider).valueOrNull;
-      if (loggedIn &&
-          profile != null &&
+      if (profile != null &&
           profile.containsKey('granja_id') &&
           profile['granja_id'] == null &&
           location != '/granja') {
         return '/granja';
       }
+      if (isLogin || location == '/cargando') return '/dashboard';
       return null;
     },
     routes: [
       GoRoute(path: '/login', builder: (_, _) => const LoginScreen()),
+      GoRoute(
+        path: '/cargando',
+        builder: (_, _) =>
+            const Scaffold(body: Center(child: CircularProgressIndicator())),
+      ),
       GoRoute(path: '/granja', builder: (_, _) => const FarmSetupScreen()),
       GoRoute(
         path: '/recuperar',

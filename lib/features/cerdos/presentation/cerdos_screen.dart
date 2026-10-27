@@ -230,7 +230,7 @@ class _PigFormState extends ConsumerState<_PigForm> {
   String _estado = 'activo';
   String? _corral;
   DateTime? _birth;
-  late final String _arete;
+  late String _arete;
   bool _saving = false;
 
   @override
@@ -244,6 +244,7 @@ class _PigFormState extends ConsumerState<_PigForm> {
             (row) => row['arete'] as String,
           ),
         );
+    if (pig == null) _actualizarAretePrevio();
     if (pig != null) {
       _name.text = pig['nombre'] as String? ?? '';
       _raza.text = pig['raza'] as String? ?? '';
@@ -253,6 +254,17 @@ class _PigFormState extends ConsumerState<_PigForm> {
       _corral = pig['corral_id'] as String?;
       final birth = pig['fecha_nacimiento'] as String?;
       _birth = birth == null ? null : DateTime.tryParse(birth);
+    }
+  }
+
+  /// La lista puede no haber cargado todavía al abrir el formulario, y entonces
+  /// mostraba 0001 aunque ya existiera; se consulta el número real a la base.
+  Future<void> _actualizarAretePrevio() async {
+    try {
+      final arete = await ref.read(pigRepositoryProvider).previewNextEarTag();
+      if (mounted) setState(() => _arete = arete);
+    } catch (_) {
+      // Sin conexión se queda el cálculo local; el definitivo se asigna al guardar.
     }
   }
 
@@ -312,12 +324,37 @@ class _PigFormState extends ConsumerState<_PigForm> {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(problem)));
       return;
     }
+    final pesoCapturado = _peso.text.trim().isEmpty
+        ? null
+        : double.parse(_peso.text.replaceAll(',', '.'));
+    final aviso = pesoIncoherenteConEdad(
+      pesoKg: pesoCapturado,
+      nacimiento: _birth,
+    );
+    if (aviso != null) {
+      final guardar = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Revisa el peso'),
+          content: Text(aviso),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Corregir'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Guardar así'),
+            ),
+          ],
+        ),
+      );
+      if (guardar != true || !mounted) return;
+    }
     setState(() => _saving = true);
     try {
       final repository = ref.read(pigRepositoryProvider);
-      final peso = _peso.text.trim().isEmpty
-          ? null
-          : double.parse(_peso.text.replaceAll(',', '.'));
+      final peso = pesoCapturado;
       if (widget.pig == null) {
         final arete = await repository.createPig(
           sexo: _sexo,

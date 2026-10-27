@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/widgets/error_view.dart';
+import '../../../core/widgets/number_formatters.dart';
 import '../../auth/data/auth_repository.dart';
 import '../data/feed_plan.dart';
 import '../data/food_repository.dart';
@@ -404,6 +405,7 @@ class _FoodFormState extends ConsumerState<_FoodForm> {
                   ),
                   inputFormatters: [
                     FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
+                    const NoLeadingZerosFormatter(),
                   ],
                   decoration: const InputDecoration(
                     labelText: 'Existencia (kg)',
@@ -417,6 +419,7 @@ class _FoodFormState extends ConsumerState<_FoodForm> {
                   ),
                   inputFormatters: [
                     FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
+                    const NoLeadingZerosFormatter(),
                   ],
                   decoration: const InputDecoration(
                     labelText: 'Costo por kg (opcional)',
@@ -569,6 +572,7 @@ class _ConsumptionFormState extends ConsumerState<_ConsumptionForm> {
                   ),
                   inputFormatters: [
                     FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
+                    const NoLeadingZerosFormatter(),
                   ],
                   decoration: const InputDecoration(
                     labelText: 'Cantidad consumida (kg)',

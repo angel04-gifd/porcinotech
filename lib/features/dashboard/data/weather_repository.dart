@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -108,7 +109,15 @@ class WeatherPlaceNotifier extends Notifier<WeatherPlace> {
   }
 }
 
+/// El clima se guarda unos minutos: al volver a Inicio se muestra el último
+/// dato al instante en vez de consultar de nuevo. Cambiar la ubicación o
+/// pulsar "Reintentar" (invalidate) sí lo vuelve a pedir.
+const weatherCacheDuration = Duration(minutes: 10);
+
 final weatherProvider = FutureProvider.autoDispose<Weather>((ref) {
+  final link = ref.keepAlive();
+  final timer = Timer(weatherCacheDuration, link.close);
+  ref.onDispose(timer.cancel);
   return fetchWeather(ref.watch(weatherPlaceProvider));
 });
 

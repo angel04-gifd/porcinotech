@@ -63,12 +63,7 @@ class AuthController extends AsyncNotifier<void> {
           'Sin conexión con el servidor. Revisa tu internet e inténtalo de nuevo.',
         );
       } on AuthException catch (error) {
-        final message = error.message.trim();
-        throw AuthOperationException(
-          message.isEmpty
-              ? 'No se pudo completar la operación de autenticación.'
-              : message,
-        );
+        throw AuthOperationException(traducirErrorAuth(error.message));
       } catch (_) {
         throw const AuthOperationException(
           'Ocurrió un error al conectar con el servicio. Inténtalo de nuevo.',
@@ -83,6 +78,47 @@ class AuthController extends AsyncNotifier<void> {
     );
     return result.valueOrNull;
   }
+}
+
+/// Los mensajes de Supabase Auth vienen en inglés; aquí se pasan a español.
+/// Un mensaje que no se reconoce y ya está en español se deja tal cual.
+String traducirErrorAuth(String original) {
+  final message = original.trim();
+  if (message.isEmpty) {
+    return 'No se pudo completar la operación de autenticación.';
+  }
+  final text = message.toLowerCase();
+  if (text.contains('invalid login credentials')) {
+    return 'Correo o contraseña incorrectos.';
+  }
+  if (text.contains('email not confirmed')) {
+    return 'Aún no confirmas tu correo. Revisa tu bandeja de entrada.';
+  }
+  if (text.contains('user already registered') ||
+      text.contains('already been registered')) {
+    return 'Ese correo ya tiene una cuenta. Inicia sesión.';
+  }
+  if (text.contains('password should be at least')) {
+    return 'La contraseña es demasiado corta.';
+  }
+  if (text.contains('same password') || text.contains('different from the old')) {
+    return 'La nueva contraseña debe ser distinta de la anterior.';
+  }
+  if (text.contains('rate limit') || text.contains('too many requests')) {
+    return 'Demasiados intentos. Espera unos minutos e inténtalo de nuevo.';
+  }
+  if (text.contains('token has expired') ||
+      text.contains('otp_expired') ||
+      text.contains('expired or is invalid')) {
+    return 'El código venció o no es válido. Pide uno nuevo.';
+  }
+  if (text.contains('invalid email') || text.contains('unable to validate email')) {
+    return 'El correo no es válido.';
+  }
+  if (text.contains('signup') && text.contains('disabled')) {
+    return 'El registro está desactivado por ahora.';
+  }
+  return message;
 }
 
 class AuthOperationException implements Exception {
