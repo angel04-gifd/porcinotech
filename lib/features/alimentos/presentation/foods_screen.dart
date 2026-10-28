@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/error_view.dart';
 import '../../../core/widgets/number_formatters.dart';
 import '../../auth/data/auth_repository.dart';
@@ -37,13 +38,14 @@ class FoodsScreen extends ConsumerWidget {
           onRetry: () => ref.invalidate(foodsProvider),
         ),
         data: (items) => items.isEmpty
-            ? Center(
-                child: Text(
-                  canManageFoods
-                      ? 'No hay alimentos registrados. Usa "Agregar alimento".'
-                      : 'No hay alimentos registrados. Pide al administrador que los agregue.',
-                  textAlign: TextAlign.center,
-                ),
+            ? EmptyState(
+                icon: Icons.grass,
+                title: 'Aún no hay alimentos',
+                message: canManageFoods
+                    ? 'Agrega tu primer alimento para controlar el stock y el consumo diario.'
+                    : 'Pide al administrador que agregue los alimentos de la granja.',
+                actionLabel: canManageFoods ? 'Agregar primer alimento' : null,
+                onAction: canManageFoods ? () => _showFoodForm(context) : null,
               )
             : ListView.separated(
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),

@@ -131,7 +131,7 @@ Puedes ver todas las observaciones en la pestaña [Issues](../../issues).
 | Datos (cerdos, corrales, alimentos, partos) | Supabase REST (PostgREST) con reglas RLS |
 | Cambios en vivo entre usuarios | Supabase Realtime |
 | Clima y geocodificación (sin clave) | Open-Meteo |
-| Inicio de sesión con Google | Pendiente |
+| Inicio de sesión con Google | Supabase Auth (OAuth) |
 
 ```
 lib/

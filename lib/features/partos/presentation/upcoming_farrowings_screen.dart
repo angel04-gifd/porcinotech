@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/error_view.dart';
 import '../../auth/data/auth_repository.dart';
 import '../../cerdos/data/pig_repository.dart';
@@ -90,8 +91,11 @@ class UpcomingFarrowingsScreen extends ConsumerWidget {
                 );
 
             if (upcoming.isEmpty) {
-              return const Center(
-                child: Text('No hay cerdas gestantes registradas.'),
+              return const EmptyState(
+                icon: Icons.favorite_border,
+                title: 'Sin partos próximos',
+                message:
+                    'Cuando registres una inseminación, aquí verás la fecha estimada de parto.',
               );
             }
 

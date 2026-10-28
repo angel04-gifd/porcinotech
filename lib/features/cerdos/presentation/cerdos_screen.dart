@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/error_view.dart';
 import '../../auth/data/auth_repository.dart';
 import '../../corrales/data/pen_repository.dart';
@@ -131,10 +132,13 @@ class CerdosScreen extends ConsumerWidget {
             ),
             data: (rows) {
               if (rows.isEmpty) {
-                return const Center(
-                  child: Text(
-                    'No hay cerdos registrados. Usa "Agregar cerdo".',
-                  ),
+                return EmptyState(
+                  icon: Icons.pets,
+                  title: 'Aún no hay cerdos',
+                  message:
+                      'Registra tu primer cerdo para llevar su peso, su arete y su corral.',
+                  actionLabel: 'Agregar primer cerdo',
+                  onAction: () => _openPigForm(context),
                 );
               }
               // Activos primero; vendidos, fallecidos y bajas al final.
