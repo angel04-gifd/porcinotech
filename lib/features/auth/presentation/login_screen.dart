@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:go_router/go_router.dart';
 import 'auth_controller.dart';
+import 'google_sign_in_button.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -94,6 +95,35 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           style: Theme.of(context).textTheme.titleMedium,
                         ),
                         const SizedBox(height: 24),
+                        GoogleSignInButton(
+                          label: _registering
+                              ? 'Registrarse con Google'
+                              : 'Iniciar sesión con Google',
+                          onPressed: isLoading
+                              ? null
+                              : () => ref
+                                    .read(authControllerProvider.notifier)
+                                    .signInWithGoogle(),
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            const Expanded(child: Divider()),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                              ),
+                              child: Text(
+                                _registering
+                                    ? 'o regístrate con correo'
+                                    : 'o inicia con tu correo',
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                            ),
+                            const Expanded(child: Divider()),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
                         TextFormField(
                           controller: _email,
                           keyboardType: TextInputType.emailAddress,
@@ -150,20 +180,25 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           },
                         ),
                         const SizedBox(height: 24),
-                        FilledButton(
-                          onPressed: isLoading ? null : _submit,
-                          child: Padding(
-                            padding: const EdgeInsets.all(12),
-                            child: isLoading
-                                ? const SizedBox.square(
-                                    dimension: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
+                        SizedBox(
+                          width: double.infinity,
+                          child: FilledButton(
+                            onPressed: isLoading ? null : _submit,
+                            child: Padding(
+                              padding: const EdgeInsets.all(12),
+                              child: isLoading
+                                  ? const SizedBox.square(
+                                      dimension: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : Text(
+                                      _registering
+                                          ? 'Crear cuenta'
+                                          : 'Ingresar',
                                     ),
-                                  )
-                                : Text(
-                                    _registering ? 'Crear cuenta' : 'Ingresar',
-                                  ),
+                            ),
                           ),
                         ),
                         if (!_registering)
@@ -173,35 +208,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 : () => context.go('/recuperar'),
                             child: const Text('¿Olvidaste tu contraseña?'),
                           ),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            const Expanded(child: Divider()),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                              ),
-                              child: Text(
-                                'o',
-                                style: Theme.of(context).textTheme.bodySmall,
-                              ),
-                            ),
-                            const Expanded(child: Divider()),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        OutlinedButton.icon(
-                          onPressed: isLoading
-                              ? null
-                              : () => ref
-                                    .read(authControllerProvider.notifier)
-                                    .signInWithGoogle(),
-                          icon: const Icon(Icons.g_mobiledata, size: 28),
-                          label: const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 12),
-                            child: Text('Continuar con Google'),
-                          ),
-                        ),
                         TextButton(
                           onPressed: isLoading
                               ? null
