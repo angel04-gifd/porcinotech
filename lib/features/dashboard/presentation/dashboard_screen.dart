@@ -268,6 +268,15 @@ class DashboardScreen extends ConsumerWidget {
             b['fecha_estimada_parto'] as String,
           ),
         );
+      final hoy = DateTime.now();
+      final hoySinHora = DateTime(hoy.year, hoy.month, hoy.day);
+      final atrasadas = upcoming
+          .where(
+            (row) => DateTime.parse(
+              row['fecha_estimada_parto'] as String,
+            ).isBefore(hoySinHora),
+          )
+          .length;
       return Card(
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 8),
@@ -278,6 +287,22 @@ class DashboardScreen extends ConsumerWidget {
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => context.go('/partos/proximos'),
               ),
+              if (atrasadas > 0)
+                ListTile(
+                  leading: Icon(
+                    Icons.warning_amber_rounded,
+                    color: Theme.of(context).colorScheme.error,
+                  ),
+                  title: Text(
+                    atrasadas == 1
+                        ? '1 gestación atrasada'
+                        : '$atrasadas gestaciones atrasadas',
+                  ),
+                  subtitle: const Text(
+                    'Revisa si ya hubo parto y regístralo, o márcala como fallida.',
+                  ),
+                  onTap: () => context.go('/partos/proximos'),
+                ),
               if (upcoming.isEmpty)
                 const ListTile(
                   leading: Icon(Icons.event_busy),
