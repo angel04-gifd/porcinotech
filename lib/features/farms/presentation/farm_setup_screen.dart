@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/widgets/error_view.dart';
 import '../../../main.dart' show RestartWidget;
 import '../../auth/data/auth_repository.dart';
 
@@ -38,12 +39,10 @@ class _FarmSetupScreenState extends ConsumerState<FarmSetupScreen> {
       // Reinicia el estado para que se carguen los datos de la granja elegida.
       RestartWidget.restart(context);
     } catch (e) {
-      final text = e.toString();
+      if (!mounted) return;
       setState(() {
         _busy = false;
-        _error = text.contains('message:')
-            ? text.split('message:').last.split(',').first.trim()
-            : 'No se pudo completar. Revisa tu conexión e inténtalo de nuevo.';
+        _error = friendlyError(e);
       });
     }
   }
