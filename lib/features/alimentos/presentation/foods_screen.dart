@@ -689,8 +689,10 @@ class _FeedHistorySheet extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final records = [...(ref.watch(feedRecordsProvider).valueOrNull ?? [])]
-      ..sort((a, b) {
+    final records = <Map<String, dynamic>>[
+      ...(ref.watch(feedRecordsProvider).valueOrNull ??
+          const <Map<String, dynamic>>[]),
+    ]..sort((a, b) {
         final byDate = '${b['fecha']}'.compareTo('${a['fecha']}');
         return byDate != 0
             ? byDate
