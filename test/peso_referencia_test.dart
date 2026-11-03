@@ -8,7 +8,7 @@ void main() {
     final ref = pesoReferenciaPorEdad(DateTime(2026, 10, 16), hoy: hoy)!;
     expect(ref.dias, 18);
     expect(ref.minKg, closeTo(4.8, 0.1));
-    expect(ref.maxKg, closeTo(7.2, 0.1));
+    expect(ref.maxKg, closeTo(7.7, 0.1));
   });
 
   test('sin fecha, con fecha futura o muy adulto no hay referencia', () {

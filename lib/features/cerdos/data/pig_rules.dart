@@ -36,11 +36,23 @@ String? pesoIncoherenteConEdad({
       .difference(DateTime(nacimiento.year, nacimiento.month, nacimiento.day))
       .inDays;
   if (days < 0) return null;
+  final edad = days == 1 ? '1 día' : '$days días';
+  final capturado =
+      pesoKg.toStringAsFixed(pesoKg % 1 == 0 ? 0 : 1);
+  // Hasta los 180 días se compara con el rango de referencia; después, solo
+  // con el máximo creíble.
+  final referencia = pesoReferenciaPorEdad(nacimiento, hoy: now);
+  if (referencia != null) {
+    if (pesoKg <= referencia.maxKg) return null;
+    return 'Un cerdo de $edad de nacido normalmente pesa entre '
+        '${referencia.minKg.toStringAsFixed(1)} y '
+        '${referencia.maxKg.toStringAsFixed(1)} kg, y capturaste $capturado kg. '
+        '¿Quieres revisar el peso o la fecha de nacimiento?';
+  }
   final limit = maxPlausibleWeightKg(days);
   if (pesoKg <= limit) return null;
-  final edad = days == 1 ? '1 día' : '$days días';
   return 'Un cerdo de $edad de nacido normalmente no pesa más de '
-      '${limit.round()} kg, y capturaste ${pesoKg.toStringAsFixed(pesoKg % 1 == 0 ? 0 : 1)} kg. '
+      '${limit.round()} kg, y capturaste $capturado kg. '
       '¿Quieres revisar el peso o la fecha de nacimiento?';
 }
 
@@ -58,7 +70,7 @@ class PesoReferencia {
 }
 
 /// Curva orientativa de crecimiento: ~1.5 kg al nacer, ~8.5 kg a los 28 días,
-/// ~27 kg a los 70 y ~87 kg a los 150. El rango es ±20 %. Después de 180 días
+/// ~27 kg a los 70 y ~87 kg a los 150. El rango es ±20 % (más 0.5 kg arriba). Después de 180 días
 /// el peso varía mucho (engorda, reproductores) y no se da referencia.
 PesoReferencia? pesoReferenciaPorEdad(DateTime? nacimiento, {DateTime? hoy}) {
   if (nacimiento == null) return null;
@@ -77,7 +89,7 @@ PesoReferencia? pesoReferenciaPorEdad(DateTime? nacimiento, {DateTime? hoy}) {
   } else {
     esperado = 87.4 + 0.85 * (dias - 150);
   }
-  final maxKg = esperado * 1.2;
+  final maxKg = esperado * 1.2 + 0.5; // margen para camadas pesadas
   final limite = maxPlausibleWeightKg(dias);
   return PesoReferencia(
     dias: dias,
