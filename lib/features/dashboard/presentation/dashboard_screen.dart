@@ -90,7 +90,7 @@ class DashboardScreen extends ConsumerWidget {
               physics: const NeverScrollableScrollPhysics(),
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: constraints.maxWidth > 700 ? 4 : 2,
-                childAspectRatio: 1.5,
+                childAspectRatio: 1.25,
                 crossAxisSpacing: 12,
                 mainAxisSpacing: 12,
               ),
@@ -108,17 +108,43 @@ class DashboardScreen extends ConsumerWidget {
                   child: InkWell(
                     onTap: () => context.go(destinations[i]),
                     child: Padding(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(14),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(metric.$3),
+                          DecoratedBox(
+                            decoration: BoxDecoration(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .primaryContainer,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(7),
+                              child: Icon(
+                                metric.$3,
+                                size: 18,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onPrimaryContainer,
+                              ),
+                            ),
+                          ),
                           const Spacer(),
                           Text(
                             metric.$2,
-                            style: Theme.of(context).textTheme.headlineSmall,
+                            style: Theme.of(context).textTheme.headlineSmall
+                                ?.copyWith(fontWeight: FontWeight.w700),
                           ),
-                          Text(metric.$1),
+                          Text(
+                            metric.$1,
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurfaceVariant,
+                                ),
+                          ),
                         ],
                       ),
                     ),
