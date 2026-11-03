@@ -332,6 +332,12 @@ class DashboardScreen extends ConsumerWidget {
                     ),
                     subtitle: Text(
                       overdue ? 'Atrasado · $detail' : detail,
+                      style: overdue
+                          ? TextStyle(
+                              color: Theme.of(context).colorScheme.error,
+                              fontWeight: FontWeight.w600,
+                            )
+                          : null,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
