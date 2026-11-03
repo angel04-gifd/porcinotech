@@ -43,3 +43,45 @@ String? pesoIncoherenteConEdad({
       '${limit.round()} kg, y capturaste ${pesoKg.toStringAsFixed(pesoKg % 1 == 0 ? 0 : 1)} kg. '
       '¿Quieres revisar el peso o la fecha de nacimiento?';
 }
+
+/// Peso de referencia (aproximado) de un cerdo según sus días de nacido.
+class PesoReferencia {
+  const PesoReferencia({
+    required this.dias,
+    required this.minKg,
+    required this.maxKg,
+  });
+
+  final int dias;
+  final double minKg;
+  final double maxKg;
+}
+
+/// Curva orientativa de crecimiento: ~1.5 kg al nacer, ~8.5 kg a los 28 días,
+/// ~27 kg a los 70 y ~87 kg a los 150. El rango es ±20 %. Después de 180 días
+/// el peso varía mucho (engorda, reproductores) y no se da referencia.
+PesoReferencia? pesoReferenciaPorEdad(DateTime? nacimiento, {DateTime? hoy}) {
+  if (nacimiento == null) return null;
+  final now = hoy ?? DateTime.now();
+  final dias = DateTime(now.year, now.month, now.day)
+      .difference(DateTime(nacimiento.year, nacimiento.month, nacimiento.day))
+      .inDays;
+  if (dias < 0 || dias > 180) return null;
+  final double esperado;
+  if (dias <= 28) {
+    esperado = 1.5 + 0.25 * dias;
+  } else if (dias <= 70) {
+    esperado = 8.5 + 0.45 * (dias - 28);
+  } else if (dias <= 150) {
+    esperado = 27.4 + 0.75 * (dias - 70);
+  } else {
+    esperado = 87.4 + 0.85 * (dias - 150);
+  }
+  final maxKg = esperado * 1.2;
+  final limite = maxPlausibleWeightKg(dias);
+  return PesoReferencia(
+    dias: dias,
+    minKg: esperado * 0.8,
+    maxKg: maxKg > limite ? limite : maxKg,
+  );
+}

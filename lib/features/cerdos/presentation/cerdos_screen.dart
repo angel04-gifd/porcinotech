@@ -460,6 +460,29 @@ class _PigFormState extends ConsumerState<_PigForm> {
                     ],
                     onChanged: (v) => setState(() => _estado = v!),
                   ),
+                if (pesoReferenciaPorEdad(_birth) case final referencia?)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(
+                          Icons.monitor_weight_outlined,
+                          size: 18,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Peso de referencia a los ${referencia.dias == 1 ? '1 día' : '${referencia.dias} días'}: '
+                            '${referencia.minKg.toStringAsFixed(1)} a '
+                            '${referencia.maxKg.toStringAsFixed(1)} kg (aproximado)',
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   title: Text(
