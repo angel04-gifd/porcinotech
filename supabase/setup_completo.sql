@@ -43,8 +43,8 @@ create table public.cerdos (
   arete text not null, raza text, peso numeric(10,2) check (peso >= 0),
   fecha_nacimiento date, sexo text not null check (sexo in ('macho', 'hembra')),
   estado text not null default 'activo' check (estado in ('activo', 'vendido', 'fallecido', 'baja')),
-  created_at timestamptz not null default now(), updated_at timestamptz not null default now(),
-  -- (el arete es único por granja; ver cerdos_arete_unico_granja)
+  created_at timestamptz not null default now(), updated_at timestamptz not null default now()
+  -- el arete es único por granja (ver cerdos_arete_unico_granja)
 );
 
 create table public.alimentos (
