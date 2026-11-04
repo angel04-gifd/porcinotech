@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../features/auth/data/auth_repository.dart';
 import '../../features/farms/presentation/farm_picker.dart';
+import 'user_avatar.dart';
 
 class MainLayout extends ConsumerWidget {
   const MainLayout({super.key, required this.child});
@@ -41,8 +42,9 @@ class MainLayout extends ConsumerWidget {
               ),
             ),
           IconButton(
+            tooltip: 'Mi perfil',
             onPressed: () => context.go('/perfil'),
-            icon: const Icon(Icons.account_circle_outlined),
+            icon: const UserAvatar(radius: 14),
           ),
         ],
       ),

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/widgets/error_view.dart';
+import '../../../core/widgets/user_avatar.dart';
 import '../../auth/data/auth_repository.dart';
 import '../../auth/presentation/auth_controller.dart';
 import '../../farms/presentation/farm_picker.dart';
@@ -105,7 +106,7 @@ class ProfileScreen extends ConsumerWidget {
     return ListView(
       padding: const EdgeInsets.all(20),
       children: [
-        const CircleAvatar(radius: 36, child: Icon(Icons.person, size: 38)),
+        const Center(child: UserAvatar(radius: 36)),
         const SizedBox(height: 12),
         Center(child: Text(email ?? '', style: texts.titleMedium)),
         const SizedBox(height: 16),
