@@ -127,10 +127,32 @@ class ProfileScreen extends ConsumerWidget {
     if (action == 'quitar') {
       await _removePhoto(context, ref);
     } else {
+      final camera = action == 'camara';
+      final accept = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          icon: Icon(
+            camera ? Icons.photo_camera_outlined : Icons.photo_library_outlined,
+          ),
+          title: Text(photoPermissionTitle(camera: camera)),
+          content: Text(photoPermissionMessage(camera: camera)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Cancelar'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: const Text('Continuar'),
+            ),
+          ],
+        ),
+      );
+      if (accept != true || !context.mounted) return;
       await _pickPhoto(
         context,
         ref,
-        action == 'camara' ? ImageSource.camera : ImageSource.gallery,
+        camera ? ImageSource.camera : ImageSource.gallery,
       );
     }
   }

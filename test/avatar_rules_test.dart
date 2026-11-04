@@ -72,4 +72,13 @@ void main() {
       expect(pickAvatarUrl(uploaded: '', google: ' '), isNull);
     });
   });
+
+  group('aviso antes de abrir galería o cámara', () {
+    test('el título y el mensaje cambian según la fuente', () {
+      expect(photoPermissionTitle(camera: false), contains('galería'));
+      expect(photoPermissionTitle(camera: true), contains('cámara'));
+      expect(photoPermissionMessage(camera: false), contains('galería'));
+      expect(photoPermissionMessage(camera: true), contains('cámara'));
+    });
+  });
 }
