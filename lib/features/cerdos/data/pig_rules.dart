@@ -87,6 +87,84 @@ String? validatePigName(String? value, {Iterable<String> aretes = const []}) {
 String? validatePenChoice(String? penId, {required bool isNewPig}) =>
     isNewPig && penId == null ? 'Elige un corral' : null;
 
+/// Días después de una inseminación (monta) en los que macho y hembra pueden
+/// compartir corral; fuera de esa ventana se pelean.
+const mountingWindowDays = 3;
+
+/// ¿Alguna de las cerdas [sowIds] tuvo una monta (inseminación) en los últimos
+/// [mountingWindowDays] días? [farrowings] son los registros de la tabla partos.
+bool hasRecentMating({
+  required Iterable<String> sowIds,
+  required Iterable<Map<String, dynamic>> farrowings,
+  DateTime? hoy,
+}) {
+  final now = hoy ?? DateTime.now();
+  final today = DateTime(now.year, now.month, now.day);
+  final sows = sowIds.toSet();
+  for (final row in farrowings) {
+    if (!sows.contains(row['cerda_id'])) continue;
+    final mating = DateTime.tryParse('${row['fecha_monta']}');
+    if (mating == null) continue;
+    final days = today
+        .difference(DateTime(mating.year, mating.month, mating.day))
+        .inDays;
+    if (days >= 0 && days <= mountingWindowDays) return true;
+  }
+  return false;
+}
+
+/// Problema de convivencia de sexos en un corral. Si [blocks] es true no se
+/// puede guardar; si no, se avisa y quien captura decide si guardar así.
+class SexMixProblem {
+  const SexMixProblem(this.message, {required this.blocks});
+
+  final String message;
+  final bool blocks;
+}
+
+/// Revisa si el cerdo de [sexo] puede ir al corral [penName] de etapa [stage]:
+/// - Un macho nunca va en un corral de Gestación (estresa a las cerdas).
+/// - Macho y hembra juntos solo se justifican durante la monta; fuera de ella
+///   se pelean, así que se avisa si no hay una inseminación reciente.
+/// [residentSexes] son los sexos de los cerdos activos que ya están en el corral.
+SexMixProblem? checkSexMix({
+  required String sexo,
+  required String stage,
+  required String penName,
+  required Iterable<String> residentSexes,
+  required bool recentMating,
+}) {
+  final hasMale = residentSexes.contains('macho');
+  final hasFemale = residentSexes.contains('hembra');
+  if (stage == 'gestacion') {
+    if (sexo == 'macho') {
+      return SexMixProblem(
+        'Un macho no puede ir en el corral $penName (Gestación): '
+        'estresa a las cerdas gestantes. Elige otro corral.',
+        blocks: true,
+      );
+    }
+    if (hasMale) {
+      return SexMixProblem(
+        'El corral $penName (Gestación) tiene un macho, y junto a una hembra '
+        'gestante la estresa. Conviene mover al macho antes.',
+        blocks: false,
+      );
+    }
+    return null;
+  }
+  final mixes = (sexo == 'macho' && hasFemale) || (sexo == 'hembra' && hasMale);
+  if (mixes && !recentMating) {
+    return SexMixProblem(
+      'Macho y hembra juntos solo se justifican durante la monta; fuera de '
+      'ella se pelean. En el corral $penName no hay una inseminación '
+      'registrada en los últimos $mountingWindowDays días.',
+      blocks: false,
+    );
+  }
+  return null;
+}
+
 /// Un corral admite otro cerdo activo solo si no está lleno.
 bool penHasRoom({required int capacity, required int activeResidents}) =>
     activeResidents < capacity;

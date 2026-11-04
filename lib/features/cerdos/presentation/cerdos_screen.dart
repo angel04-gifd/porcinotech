@@ -325,12 +325,85 @@ class _PigFormState extends ConsumerState<_PigForm> {
     return null;
   }
 
+  /// Convivencia de sexos en el corral elegido (ver [checkSexMix]). Solo se
+  /// revisa si el cerdo entra al corral o cambia de sexo estando en él.
+  SexMixProblem? _sexMixProblem() {
+    final pig = widget.pig;
+    if (_estado != 'activo' || _corral == null) return null;
+    final entra =
+        pig == null ||
+        pig['corral_id'] != _corral ||
+        pig['estado'] != 'activo' ||
+        pig['sexo'] != _sexo;
+    if (!entra) return null;
+    final pens =
+        ref.read(pensProvider).valueOrNull ?? const <Map<String, dynamic>>[];
+    final pen = pens.where((row) => row['id'] == _corral).firstOrNull;
+    if (pen == null) return null;
+    final residentes =
+        (ref.read(pigsProvider).valueOrNull ?? const <Map<String, dynamic>>[])
+            .where(
+              (row) =>
+                  row['corral_id'] == _corral &&
+                  row['estado'] == 'activo' &&
+                  row['id'] != pig?['id'],
+            )
+            .toList();
+    final hembraIds = [
+      for (final row in residentes)
+        if (row['sexo'] == 'hembra') row['id'] as String,
+      if (_sexo == 'hembra' && pig != null) pig['id'] as String,
+    ];
+    return checkSexMix(
+      sexo: _sexo,
+      stage: pen['etapa'] as String? ?? 'desarrollo',
+      penName: '${pen['nombre']}',
+      residentSexes: [for (final row in residentes) row['sexo'] as String],
+      recentMating: hasRecentMating(
+        sowIds: hembraIds,
+        farrowings:
+            ref.read(farrowingsProvider).valueOrNull ??
+            const <Map<String, dynamic>>[],
+      ),
+    );
+  }
+
+  /// Diálogo de aviso: devuelve true si se elige "Guardar así".
+  Future<bool?> _confirm(String titulo, String mensaje) => showDialog<bool>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: Text(titulo),
+      content: Text(mensaje),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context, false),
+          child: const Text('Corregir'),
+        ),
+        TextButton(
+          onPressed: () => Navigator.pop(context, true),
+          child: const Text('Guardar así'),
+        ),
+      ],
+    ),
+  );
+
   Future<void> _save() async {
     if (!_key.currentState!.validate() || _saving) return;
     final problem = _businessProblem();
     if (problem != null) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(problem)));
       return;
+    }
+    final mix = _sexMixProblem();
+    if (mix != null) {
+      if (mix.blocks) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(mix.message)));
+        return;
+      }
+      final guardar = await _confirm('Revisa la convivencia', mix.message);
+      if (guardar != true || !mounted) return;
     }
     final pesoCapturado = _peso.text.trim().isEmpty
         ? null
@@ -340,23 +413,7 @@ class _PigFormState extends ConsumerState<_PigForm> {
       nacimiento: _birth,
     );
     if (aviso != null) {
-      final guardar = await showDialog<bool>(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Revisa el peso'),
-          content: Text(aviso),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('Corregir'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('Guardar así'),
-            ),
-          ],
-        ),
-      );
+      final guardar = await _confirm('Revisa el peso', aviso);
       if (guardar != true || !mounted) return;
     }
     setState(() => _saving = true);
