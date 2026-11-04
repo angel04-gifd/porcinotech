@@ -17,6 +17,11 @@ final currentUserEmailProvider = Provider<String?>((ref) {
   ref.watch(authStateProvider);
   return ref.read(authRepositoryProvider).currentUserEmail;
 });
+/// Foto de la cuenta de Google (si inició sesión con Google); null con correo y contraseña.
+final currentUserAvatarProvider = Provider<String?>((ref) {
+  ref.watch(authStateProvider);
+  return ref.read(authRepositoryProvider).currentUserAvatarUrl;
+});
 final currentProfileProvider = StreamProvider<Map<String, dynamic>?>((ref) {
   final authState = ref.watch(authStateProvider).valueOrNull;
   final userId = authState?.session?.user.id;
@@ -114,6 +119,13 @@ class AuthRepository {
   AuthRepository(this._client);
   final SupabaseClient _client;
   String? get currentUserEmail => _client.auth.currentUser?.email;
+
+  /// URL de la foto que Google entrega al iniciar sesión (`avatar_url` o `picture`).
+  String? get currentUserAvatarUrl {
+    final data = _client.auth.currentUser?.userMetadata;
+    final url = (data?['avatar_url'] ?? data?['picture']) as String?;
+    return url == null || url.trim().isEmpty ? null : url.trim();
+  }
 
   Future<String> signIn({
     required String email,
