@@ -112,6 +112,11 @@ class FoodRepository {
     });
   }
 
+  /// Borra una comida registrada; el stock se devuelve solo (trigger de la base).
+  Future<void> deleteConsumption(String consumptionId) async {
+    await _client.from('consumos').delete().eq('id', consumptionId);
+  }
+
   String _dateOnly(DateTime value) =>
       '${value.year.toString().padLeft(4, '0')}-'
       '${value.month.toString().padLeft(2, '0')}-'

@@ -7,7 +7,9 @@ import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/error_view.dart';
 import '../../../core/widgets/number_formatters.dart';
 import '../../auth/data/auth_repository.dart';
+import '../../corrales/data/pen_repository.dart';
 import '../data/feed_plan.dart';
+import '../data/feeding_rules.dart';
 import '../data/food_repository.dart';
 import '../data/production_stage_repository.dart';
 
@@ -30,7 +32,25 @@ class FoodsScreen extends ConsumerWidget {
         ref.watch(currentUserRoleProvider).valueOrNull == 'admin';
 
     return Scaffold(
-      body: foods.when(
+      body: Column(
+        children: [
+          Align(
+            alignment: Alignment.centerRight,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+              child: TextButton.icon(
+                onPressed: () => showModalBottomSheet<void>(
+                  context: context,
+                  isScrollControlled: true,
+                  builder: (_) => const _FeedHistorySheet(),
+                ),
+                icon: const Icon(Icons.history),
+                label: const Text('Comidas registradas'),
+              ),
+            ),
+          ),
+          Expanded(
+            child: foods.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, _) => ErrorView(
           title: 'No se pudieron cargar los alimentos',
@@ -160,6 +180,9 @@ class FoodsScreen extends ConsumerWidget {
                   );
                 },
               ),
+      ),
+          ),
+        ],
       ),
       floatingActionButton: canManageFoods
           ? FloatingActionButton.extended(
@@ -482,6 +505,44 @@ class _ConsumptionFormState extends ConsumerState<_ConsumptionForm> {
 
   Future<void> _save() async {
     if (!_formKey.currentState!.validate() || _saving) return;
+    final records = ref.read(feedRecordsProvider).valueOrNull ?? [];
+    final previous = feedingsOn(
+      records,
+      penId: _penId,
+      fecha: feedingDateKey(_date),
+    );
+    if (previous >= maxFeedingsPerDay) {
+      final plan = ref.read(feedPlanProvider).valueOrNull;
+      final penName = _penId == null
+          ? 'los corrales'
+          : plan?.pens
+                    .where((pen) => pen.penId == _penId)
+                    .map((pen) => pen.penName)
+                    .firstOrNull ??
+                'este corral';
+      final seguir = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Ya se les dio de comer'),
+          content: Text(
+            'Hoy ya se registraron $previous comidas para $penName y lo normal '
+            'son $maxFeedingsPerDay al día (hay que racionar). '
+            '¿Seguro que quieres anotar otra?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancelar'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Anotar de todos modos'),
+            ),
+          ],
+        ),
+      );
+      if (seguir != true || !mounted) return;
+    }
     setState(() => _saving = true);
     try {
       await ref
@@ -619,5 +680,159 @@ class _ConsumptionFormState extends ConsumerState<_ConsumptionForm> {
         ),
       ),
     );
+  }
+}
+
+/// Comidas de los últimos 7 días; el administrador puede borrar las que sobran.
+class _FeedHistorySheet extends ConsumerWidget {
+  const _FeedHistorySheet();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final records = <Map<String, dynamic>>[
+      ...(ref.watch(feedRecordsProvider).valueOrNull ??
+          const <Map<String, dynamic>>[]),
+    ]..sort((a, b) {
+        final byDate = '${b['fecha']}'.compareTo('${a['fecha']}');
+        return byDate != 0
+            ? byDate
+            : '${b['created_at']}'.compareTo('${a['created_at']}');
+      });
+    final foods = {
+      for (final f in ref.watch(foodsProvider).valueOrNull ?? [])
+        f['id']: f['nombre'],
+    };
+    final pens = {
+      for (final p in ref.watch(pensProvider).valueOrNull ?? [])
+        p['id']: p['nombre'],
+    };
+    final extras = extraFeedingIds(records);
+    final isAdmin = ref.watch(currentUserRoleProvider).valueOrNull == 'admin';
+
+    return SafeArea(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.sizeOf(context).height * 0.8,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 4),
+              child: Text(
+                'Comidas registradas',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+              child: Text(
+                isAdmin
+                    ? 'Últimos 7 días. Lo normal son $maxFeedingsPerDay comidas '
+                          'al día por corral; las que pasan se marcan como extra '
+                          'y puedes borrarlas (el alimento vuelve al stock).'
+                    : 'Últimos 7 días. Lo normal son $maxFeedingsPerDay comidas '
+                          'al día por corral. Solo el administrador puede borrar.',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ),
+            Flexible(
+              child: records.isEmpty
+                  ? const Padding(
+                      padding: EdgeInsets.all(24),
+                      child: Text('Todavía no hay comidas registradas.'),
+                    )
+                  : ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: records.length,
+                      itemBuilder: (context, index) {
+                        final r = records[index];
+                        final id = r['id'] as String;
+                        final extra = extras.contains(id);
+                        final created = DateTime.tryParse(
+                          '${r['created_at']}',
+                        )?.toLocal();
+                        final when = DateFormat.MMMd(
+                          'es',
+                        ).format(DateTime.parse('${r['fecha']}'));
+                        final hour = created == null
+                            ? ''
+                            : ' · ${DateFormat.Hm('es').format(created)}';
+                        final kg = (r['cantidad_kg'] as num).toDouble();
+                        return ListTile(
+                          leading: Icon(
+                            extra
+                                ? Icons.warning_amber_rounded
+                                : Icons.restaurant,
+                            color: extra
+                                ? Theme.of(context).colorScheme.error
+                                : null,
+                          ),
+                          title: Text(
+                            '${foods[r['alimento_id']] ?? 'Alimento'} · '
+                            '${kg.toStringAsFixed(1)} kg',
+                          ),
+                          subtitle: Text(
+                            '${pens[r['corral_id']] ?? 'Todos los corrales'} · '
+                            '$when$hour${extra ? ' · EXTRA' : ''}',
+                            style: extra
+                                ? TextStyle(
+                                    color: Theme.of(context).colorScheme.error,
+                                  )
+                                : null,
+                          ),
+                          trailing: isAdmin
+                              ? IconButton(
+                                  tooltip: 'Borrar esta comida',
+                                  icon: const Icon(Icons.delete_outline),
+                                  onPressed: () =>
+                                      _confirmDelete(context, ref, id, kg),
+                                )
+                              : null,
+                        );
+                      },
+                    ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _confirmDelete(
+    BuildContext context,
+    WidgetRef ref,
+    String id,
+    double kg,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Borrar comida'),
+        content: Text(
+          '¿Borrar esta comida de ${kg.toStringAsFixed(1)} kg? '
+          'El alimento vuelve al stock.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Borrar'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+    try {
+      await ref.read(foodRepositoryProvider).deleteConsumption(id);
+    } catch (error) {
+      if (context.mounted) {
+        showErrorSnackBar(context, 'No se pudo borrar la comida', error);
+      }
+    }
   }
 }

@@ -90,7 +90,7 @@ class DashboardScreen extends ConsumerWidget {
               physics: const NeverScrollableScrollPhysics(),
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: constraints.maxWidth > 700 ? 4 : 2,
-                childAspectRatio: 1.5,
+                childAspectRatio: 1.25,
                 crossAxisSpacing: 12,
                 mainAxisSpacing: 12,
               ),
@@ -108,17 +108,43 @@ class DashboardScreen extends ConsumerWidget {
                   child: InkWell(
                     onTap: () => context.go(destinations[i]),
                     child: Padding(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(14),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(metric.$3),
+                          DecoratedBox(
+                            decoration: BoxDecoration(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .primaryContainer,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(7),
+                              child: Icon(
+                                metric.$3,
+                                size: 18,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onPrimaryContainer,
+                              ),
+                            ),
+                          ),
                           const Spacer(),
                           Text(
                             metric.$2,
-                            style: Theme.of(context).textTheme.headlineSmall,
+                            style: Theme.of(context).textTheme.headlineSmall
+                                ?.copyWith(fontWeight: FontWeight.w700),
                           ),
-                          Text(metric.$1),
+                          Text(
+                            metric.$1,
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurfaceVariant,
+                                ),
+                          ),
                         ],
                       ),
                     ),
@@ -268,6 +294,15 @@ class DashboardScreen extends ConsumerWidget {
             b['fecha_estimada_parto'] as String,
           ),
         );
+      final hoy = DateTime.now();
+      final hoySinHora = DateTime(hoy.year, hoy.month, hoy.day);
+      final atrasadas = upcoming
+          .where(
+            (row) => DateTime.parse(
+              row['fecha_estimada_parto'] as String,
+            ).isBefore(hoySinHora),
+          )
+          .length;
       return Card(
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 8),
@@ -278,6 +313,22 @@ class DashboardScreen extends ConsumerWidget {
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => context.go('/partos/proximos'),
               ),
+              if (atrasadas > 0)
+                ListTile(
+                  leading: Icon(
+                    Icons.warning_amber_rounded,
+                    color: Theme.of(context).colorScheme.error,
+                  ),
+                  title: Text(
+                    atrasadas == 1
+                        ? '1 gestación atrasada'
+                        : '$atrasadas gestaciones atrasadas',
+                  ),
+                  subtitle: const Text(
+                    'Revisa si ya hubo parto y regístralo, o márcala como fallida.',
+                  ),
+                  onTap: () => context.go('/partos/proximos'),
+                ),
               if (upcoming.isEmpty)
                 const ListTile(
                   leading: Icon(Icons.event_busy),
@@ -307,6 +358,12 @@ class DashboardScreen extends ConsumerWidget {
                     ),
                     subtitle: Text(
                       overdue ? 'Atrasado · $detail' : detail,
+                      style: overdue
+                          ? TextStyle(
+                              color: Theme.of(context).colorScheme.error,
+                              fontWeight: FontWeight.w600,
+                            )
+                          : null,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
