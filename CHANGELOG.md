@@ -2,6 +2,15 @@
 
 Todas las versiones notables de **PorcinoTech**. El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y el versionamiento es [semántico](https://semver.org/lang/es/) (`MAYOR.MENOR.PARCHE`). Cada entrega importante se identifica con un tag `vX.Y.Z` y se publica como Release con su APK.
 
+## [1.0.5] - 2026-11-03
+
+### Agregado
+- Guía del flujo de trabajo en GitHub (`docs/flujo-de-trabajo.md`) y plantilla de Pull Request.
+- Validación automática con `flutter analyze` y `flutter test` en cada push de rama (CI).
+
+### Cambiado
+- Tarjetas del Inicio con más jerarquía visual (icono en recuadro, cifra en negrita, etiqueta más suave). Este cambio ya estaba en `main`, pero no en el APK publicado como 1.0.4.
+
 ## [1.0.4] - 2026-11-03
 
 ### Agregado
@@ -64,6 +73,7 @@ Todas las versiones notables de **PorcinoTech**. El formato sigue [Keep a Change
 - Panel de control con métricas y gráfica de consumo.
 - Pruebas de fecha de parto, arete, gestación, peso y capacidad.
 
+[1.0.5]: https://github.com/angel04-gifd/porcinotech/releases/tag/v1.0.5
 [1.0.4]: https://github.com/angel04-gifd/porcinotech/releases/tag/v1.0.4
 [1.0.3]: https://github.com/angel04-gifd/porcinotech/releases/tag/v1.0.3
 [1.0.2]: https://github.com/angel04-gifd/porcinotech/compare/v1.0.1...7b022ab
