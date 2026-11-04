@@ -88,7 +88,7 @@ La base de datos las hace cumplir (la app solo avisa antes):
 - El parto real no puede registrarse antes de 100 días de la monta ni en el futuro.
 - Una cerda con gestación en curso no puede cambiar de sexo ni pasar a vendida, fallecida o baja.
 - Un corral no admite más cerdos activos que su capacidad.
-- El peso va de 0 a 500 kg.
+- El peso debe ser mayor que 0 y de hasta 400 kg.
 
 ---
 
