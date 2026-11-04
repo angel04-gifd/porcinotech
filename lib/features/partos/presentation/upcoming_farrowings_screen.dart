@@ -260,6 +260,7 @@ class _BirthFormState extends ConsumerState<_BirthForm> {
           key: _formKey,
           child: Column(
             mainAxisSize: MainAxisSize.min,
+            spacing: 12,
             children: [
               Text(
                 'Registrar parto real',

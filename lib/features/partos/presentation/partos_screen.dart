@@ -405,6 +405,7 @@ class _PartosScreenState extends ConsumerState<PartosScreen> {
           'Registrar inseminación',
           style: Theme.of(context).textTheme.titleLarge,
         ),
+        const SizedBox(height: 12),
         pigs.when(
           loading: () => const LinearProgressIndicator(),
           error: (error, _) => ErrorView(
@@ -489,6 +490,7 @@ class _PartosScreenState extends ConsumerState<PartosScreen> {
               subtitle: Text(DateFormat.yMMMMd('es').format(_fepa!)),
             ),
           ),
+        const SizedBox(height: 12),
         TextField(
           controller: _observations,
           maxLines: 2,
