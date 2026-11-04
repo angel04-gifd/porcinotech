@@ -2,6 +2,21 @@
 
 Todas las versiones notables de **PorcinoTech**. El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y el versionamiento es [semántico](https://semver.org/lang/es/) (`MAYOR.MENOR.PARCHE`). Cada entrega importante se identifica con un tag `vX.Y.Z` y se publica como Release con su APK.
 
+## [1.0.6] - 2026-11-04
+
+### Agregado
+- Menú de razas (Duroc, Yorkshire, Landrace, Hampshire, Pietrain, Criollo y Otra) en el formulario de cerdos.
+- Foto de la cuenta de Google, o las iniciales si no hay foto, en el ícono de la barra superior y en el perfil.
+- Convivencia de sexos: un macho no puede ir a un corral de Gestación, y se avisa cuando macho y hembra comparten corral sin una inseminación en los últimos 3 días.
+- El corral es obligatorio al registrar un cerdo nuevo.
+
+### Cambiado
+- El peso debe ser mayor que 0 y de hasta 400 kg (antes 500), solo admite números y muestra un texto de ayuda.
+- El nombre del cerdo no puede ser solo números ni igual al arete de otro cerdo.
+
+### Corregido
+- Formulario de cerdos: los campos ya no se montan entre sí y el botón muestra "Guardando…" en lugar de solo el círculo de carga.
+
 ## [1.0.5] - 2026-11-03
 
 ### Agregado
@@ -73,6 +88,7 @@ Todas las versiones notables de **PorcinoTech**. El formato sigue [Keep a Change
 - Panel de control con métricas y gráfica de consumo.
 - Pruebas de fecha de parto, arete, gestación, peso y capacidad.
 
+[1.0.6]: https://github.com/angel04-gifd/porcinotech/releases/tag/v1.0.6
 [1.0.5]: https://github.com/angel04-gifd/porcinotech/releases/tag/v1.0.5
 [1.0.4]: https://github.com/angel04-gifd/porcinotech/releases/tag/v1.0.4
 [1.0.3]: https://github.com/angel04-gifd/porcinotech/releases/tag/v1.0.3
