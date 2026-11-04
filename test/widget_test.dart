@@ -54,13 +54,14 @@ void main() {
     expect(earliestBirthDate(DateTime(2026, 1, 1)).isBefore(dueDateFor(DateTime(2026, 1, 1))), isTrue);
   });
 
-  test('El peso se valida entre 0 y 500 kg', () {
+  test('El peso se valida entre 0 (sin incluirlo) y 400 kg', () {
     expect(validatePigWeight(''), isNull);
     expect(validatePigWeight(null), isNull);
     expect(validatePigWeight('85,5'), isNull);
-    expect(validatePigWeight('500'), isNull);
+    expect(validatePigWeight('400'), isNull);
+    expect(validatePigWeight('0'), isNotNull);
     expect(validatePigWeight('-5'), isNotNull);
-    expect(validatePigWeight('501'), isNotNull);
+    expect(validatePigWeight('401'), isNotNull);
     expect(validatePigWeight('abc'), isNotNull);
   });
 

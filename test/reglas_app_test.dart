@@ -12,13 +12,14 @@ void main() {
       expect(validatePigWeight(null), isNull);
       expect(validatePigWeight('12,5'), isNull);
       expect(validatePigWeight('12.5'), isNull);
-      expect(validatePigWeight('500'), isNull);
+      expect(validatePigWeight('400'), isNull);
     });
 
-    test('rechaza texto, negativos y más de 500 kg', () {
+    test('rechaza texto, cero, negativos y más de 400 kg', () {
       expect(validatePigWeight('abc'), isNotNull);
+      expect(validatePigWeight('0'), contains('mayor que 0'));
       expect(validatePigWeight('-1'), isNotNull);
-      expect(validatePigWeight('501'), contains('500'));
+      expect(validatePigWeight('401'), contains('400'));
     });
   });
 

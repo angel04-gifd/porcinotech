@@ -1,14 +1,69 @@
-/// Peso máximo aceptado para un cerdo, en kg.
-const maxPigWeightKg = 500;
+/// Peso máximo aceptado para un cerdo, en kg (un semental grande ronda los 400).
+const maxPigWeightKg = 400;
 
-/// Valida el texto del peso (coma o punto decimal). Vacío es válido.
+/// Valida el texto del peso (coma o punto decimal): vacío es válido, y si se
+/// captura debe ser mayor que 0 y no pasar de [maxPigWeightKg].
 String? validatePigWeight(String? value) {
   final text = value?.trim() ?? '';
   if (text.isEmpty) return null;
   final weight = double.tryParse(text.replaceAll(',', '.'));
   if (weight == null) return 'Peso inválido';
-  if (weight < 0) return 'El peso no puede ser negativo';
+  if (weight <= 0) return 'El peso debe ser mayor que 0';
   if (weight > maxPigWeightKg) return 'El peso máximo es $maxPigWeightKg kg';
+  return null;
+}
+
+/// Razas del menú desplegable; la opción [otherBreed] permite escribir otra.
+const pigBreeds = [
+  'Duroc',
+  'Yorkshire',
+  'Landrace',
+  'Hampshire',
+  'Pietrain',
+  'Criollo',
+];
+
+/// Opción del menú que abre un campo de texto para una raza que no está en la lista.
+const otherBreed = 'Otra';
+
+String _breedKey(String value) {
+  const from = 'áéíóú';
+  const to = 'aeiou';
+  var key = value.trim().toLowerCase();
+  for (var i = 0; i < from.length; i++) {
+    key = key.replaceAll(from[i], to[i]);
+  }
+  return key;
+}
+
+/// Cómo se muestra en el menú una raza ya guardada: si coincide con una de la
+/// lista (sin importar mayúsculas ni acentos, así "duroc" es "Duroc") usa esa;
+/// si no, queda como [otherBreed] con el texto original; vacía no elige nada.
+({String? opcion, String otra}) breedSelectionFor(String? saved) {
+  final text = saved?.trim() ?? '';
+  if (text.isEmpty) return (opcion: null, otra: '');
+  final key = _breedKey(text);
+  for (final breed in pigBreeds) {
+    if (_breedKey(breed) == key) return (opcion: breed, otra: '');
+  }
+  return (opcion: otherBreed, otra: text);
+}
+
+/// Raza que se guarda según lo elegido en el menú (y el texto si fue "Otra").
+String? breedToSave({required String? opcion, required String otra}) {
+  if (opcion == null) return null;
+  if (opcion != otherBreed) return opcion;
+  final text = otra.trim();
+  if (text.isEmpty) return null;
+  final match = breedSelectionFor(text);
+  return match.opcion == otherBreed ? text : match.opcion;
+}
+
+/// Si se elige "Otra", la raza escrita es obligatoria y de largo razonable.
+String? validateOtherBreed(String? value) {
+  final text = value?.trim() ?? '';
+  if (text.isEmpty) return 'Escribe la raza';
+  if (text.length > 40) return 'La raza es demasiado larga';
   return null;
 }
 
