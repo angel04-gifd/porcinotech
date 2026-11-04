@@ -346,7 +346,68 @@ class ProfileScreen extends ConsumerWidget {
             ),
           ),
         ),
+        const SizedBox(height: 8),
+        Center(
+          child: TextButton(
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.error,
+            ),
+            onPressed: () => _eliminarCuenta(context, ref),
+            child: const Text('Eliminar mi cuenta'),
+          ),
+        ),
       ],
     );
+  }
+
+  Future<void> _eliminarCuenta(BuildContext context, WidgetRef ref) async {
+    final controller = TextEditingController();
+    final confirmar = await showDialog<bool>(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: const Text('Eliminar mi cuenta'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Se borrará tu cuenta de forma permanente. Si eres el único '
+                'miembro de tu granja, también se borrarán la granja y todos '
+                'sus datos. Esta acción no se puede deshacer.',
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: controller,
+                onChanged: (_) => setState(() {}),
+                decoration: const InputDecoration(
+                  labelText: 'Escribe ELIMINAR para confirmar',
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancelar'),
+            ),
+            FilledButton(
+              onPressed: controller.text.trim().toUpperCase() == 'ELIMINAR'
+                  ? () => Navigator.pop(context, true)
+                  : null,
+              child: const Text('Eliminar'),
+            ),
+          ],
+        ),
+      ),
+    );
+    controller.dispose();
+    if (confirmar != true) return;
+    try {
+      await ref.read(authRepositoryProvider).eliminarMiCuenta();
+    } catch (e) {
+      if (!context.mounted) return;
+      showErrorSnackBar(context, 'No se pudo eliminar la cuenta.', e);
+    }
   }
 }

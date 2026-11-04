@@ -61,10 +61,47 @@ class PorcinoTechApp extends ConsumerWidget {
       GlobalWidgetsLocalizations.delegate,
       GlobalCupertinoLocalizations.delegate,
     ],
-    theme: ThemeData(
-      colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xff176b4d)),
-      useMaterial3: true,
-    ),
+    theme: _buildTheme(),
     routerConfig: ref.watch(appRouterProvider),
+  );
+}
+
+/// Verde de campo como base; el rosa de cerdo se usa solo en el botón de
+/// acción principal para que sea lo que más destaque.
+ThemeData _buildTheme() {
+  final scheme = ColorScheme.fromSeed(
+    seedColor: const Color(0xff176b4d),
+  ).copyWith(
+    tertiaryContainer: const Color(0xffffd9de),
+    onTertiaryContainer: const Color(0xff5c1a26),
+  );
+  final radius = BorderRadius.circular(14);
+  return ThemeData(
+    colorScheme: scheme,
+    useMaterial3: true,
+    scaffoldBackgroundColor: scheme.surface,
+    appBarTheme: AppBarTheme(
+      backgroundColor: scheme.surface,
+      scrolledUnderElevation: 0,
+      centerTitle: false,
+    ),
+    cardTheme: CardThemeData(
+      elevation: 0,
+      color: scheme.surfaceContainerLowest,
+      shape: RoundedRectangleBorder(
+        borderRadius: radius,
+        side: BorderSide(color: scheme.outlineVariant),
+      ),
+    ),
+    inputDecorationTheme: InputDecorationTheme(
+      filled: true,
+      fillColor: scheme.surfaceContainerLow,
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+    ),
+    floatingActionButtonTheme: FloatingActionButtonThemeData(
+      backgroundColor: scheme.tertiaryContainer,
+      foregroundColor: scheme.onTertiaryContainer,
+      elevation: 1,
+    ),
   );
 }

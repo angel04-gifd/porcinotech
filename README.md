@@ -106,6 +106,12 @@ Lee la [**guía para testers**](testers/README.md): cómo participar, qué convi
 
 > 🔓 Este repositorio es **público**: lo que escribas en tu apartado lo puede ver cualquiera. No pongas contraseñas ni datos reales.
 
+## 🔒 Privacidad y cuenta
+
+- [Política de privacidad](docs/privacidad.md) y [Términos de uso](docs/terminos.md).
+- Puedes borrar tu cuenta desde **Perfil → Eliminar mi cuenta** (necesita la función `eliminar_mi_cuenta`, en `supabase/migrations/20261102_eliminar_cuenta.sql`).
+- Contacto: yubi0423mil@gmail.com
+
 ## 💬 Observaciones y comentarios
 
 ¿Encontraste un error o tienes una idea? Además de tu apartado, puedes reportarlo desde **Issues**:

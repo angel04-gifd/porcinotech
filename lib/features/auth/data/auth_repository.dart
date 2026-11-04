@@ -219,6 +219,12 @@ class AuthRepository {
 
   Future<void> signOut() => _client.auth.signOut();
 
+  /// Borra la cuenta y sus datos (ver supabase/migrations/20261102_eliminar_cuenta.sql).
+  Future<void> eliminarMiCuenta() async {
+    await _client.rpc('eliminar_mi_cuenta');
+    await _client.auth.signOut();
+  }
+
   /// Envía al correo un código para restablecer la contraseña.
   Future<void> sendPasswordReset(String email) =>
       _client.auth.resetPasswordForEmail(email.trim());

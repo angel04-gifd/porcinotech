@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/error_view.dart';
 import '../../alimentos/data/feed_plan.dart';
 import '../../alimentos/data/production_stage_repository.dart';
@@ -113,13 +114,11 @@ class CorralesScreen extends ConsumerWidget {
           data: (allPigs) {
             final pigs = allPigs.where(isActivePig).toList();
             if (pens.isEmpty) {
-              return Center(
-                child: Text(
-                  isAdmin
-                      ? 'No hay corrales registrados. Usa "Nuevo corral".'
-                      : 'No hay corrales registrados. Pide al administrador que los cree.',
-                  textAlign: TextAlign.center,
-                ),
+              return EmptyState(
+                icon: Icons.grid_view_outlined,
+                message: isAdmin
+                    ? 'No hay corrales registrados. Usa "Nuevo corral".'
+                    : 'No hay corrales registrados. Pide al administrador que los cree.',
               );
             }
             return ListView.separated(

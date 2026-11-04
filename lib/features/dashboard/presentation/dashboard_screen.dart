@@ -293,15 +293,20 @@ class DashboardScreen extends ConsumerWidget {
                     row['fecha_estimada_parto'] as String,
                   );
                   final observation = (row['observaciones'] as String?)?.trim();
+                  final now = DateTime.now();
+                  final overdue = due.isBefore(
+                    DateTime(now.year, now.month, now.day),
+                  );
+                  final detail = observation == null || observation.isEmpty
+                      ? 'Parto estimado'
+                      : observation;
                   return ListTile(
                     leading: const Icon(Icons.pets),
                     title: Text(
                       '$earTag · ${DateFormat.yMMMd('es').format(due)}',
                     ),
                     subtitle: Text(
-                      observation == null || observation.isEmpty
-                          ? 'Parto estimado'
-                          : observation,
+                      overdue ? 'Atrasado · $detail' : detail,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),

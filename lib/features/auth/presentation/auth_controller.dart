@@ -118,7 +118,13 @@ String traducirErrorAuth(String original) {
   if (text.contains('signup') && text.contains('disabled')) {
     return 'El registro está desactivado por ahora.';
   }
-  return message;
+  // Un mensaje ya escrito en español se deja; uno en inglés no se muestra.
+  final esEspanol = RegExp(
+    r'[áéíóúñ¿]|\b(el|la|los|las|solo|debes|tu|que|una|con|para)\b',
+  ).hasMatch(text);
+  return esEspanol
+      ? message
+      : 'No se pudo completar la operación. Inténtalo de nuevo.';
 }
 
 class AuthOperationException implements Exception {
