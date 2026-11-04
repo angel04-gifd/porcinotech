@@ -67,6 +67,21 @@ String? validateOtherBreed(String? value) {
   return null;
 }
 
+/// Nombre del cerdo (opcional): no puede ser solo números, porque se confunde
+/// con un arete, ni coincidir con el arete de otro cerdo ([aretes]).
+String? validatePigName(String? value, {Iterable<String> aretes = const []}) {
+  final text = value?.trim() ?? '';
+  if (text.isEmpty) return null;
+  if (RegExp(r'^\d+$').hasMatch(text)) {
+    return 'El nombre no puede ser solo números (se confunde con un arete)';
+  }
+  final lower = text.toLowerCase();
+  if (aretes.any((arete) => arete.trim().toLowerCase() == lower)) {
+    return 'Ese nombre ya es el arete de otro cerdo';
+  }
+  return null;
+}
+
 /// Un corral admite otro cerdo activo solo si no está lleno.
 bool penHasRoom({required int capacity, required int activeResidents}) =>
     activeResidents < capacity;

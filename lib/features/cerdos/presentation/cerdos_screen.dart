@@ -278,6 +278,12 @@ class _PigFormState extends ConsumerState<_PigForm> {
     super.dispose();
   }
 
+  /// Aretes de los demás cerdos (no el de este), para que el nombre no coincida.
+  Iterable<String> _otrosAretes() =>
+      (ref.read(pigsProvider).valueOrNull ?? const <Map<String, dynamic>>[])
+          .where((row) => row['id'] != widget.pig?['id'])
+          .map((row) => row['arete'] as String);
+
   /// Reglas de negocio que se avisan antes de enviar (la base de datos las
   /// vuelve a validar). Devuelve el mensaje del problema, o null si todo bien.
   String? _businessProblem() {
@@ -430,6 +436,8 @@ class _PigFormState extends ConsumerState<_PigForm> {
                   decoration: const InputDecoration(
                     labelText: 'Nombre del cerdo',
                   ),
+                  validator: (value) =>
+                      validatePigName(value, aretes: _otrosAretes()),
                 ),
                 DropdownButtonFormField<String?>(
                   initialValue: _razaOpcion,
