@@ -1,9 +1,12 @@
+import 'dart:typed_data';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/config/app_config.dart';
 import '../../../core/supabase/resilient_stream.dart';
 import '../../../core/supabase/supabase_client.dart';
+import '../../profile/data/avatar_rules.dart';
 
 final authRepositoryProvider = Provider<AuthRepository>(
   (ref) => AuthRepository(ref.watch(supabaseClientProvider)),
@@ -227,6 +230,62 @@ class AuthRepository {
           'updated_at': DateTime.now().toUtc().toIso8601String(),
         })
         .eq('user_id', user.id);
+  }
+
+  /// Sube la foto al bucket "avatars" (en la carpeta del usuario) y guarda su
+  /// dirección en el perfil. Ver supabase/migrations/20261104_foto_perfil.sql.
+  Future<String> subirFotoPerfil(
+    Uint8List bytes, {
+    required String extension,
+  }) async {
+    final user = _client.auth.currentUser;
+    if (user == null) throw const AuthException('No hay una sesión activa.');
+    final bucket = _client.storage.from('avatars');
+    final path = avatarStoragePath(user.id, extension);
+    await bucket.uploadBinary(
+      path,
+      bytes,
+      fileOptions: FileOptions(
+        upsert: true,
+        contentType: avatarContentType(extension),
+      ),
+    );
+    // La marca de tiempo evita que se siga viendo la foto anterior guardada en caché.
+    final url =
+        '${bucket.getPublicUrl(path)}?v=${DateTime.now().millisecondsSinceEpoch}';
+    await _client
+        .from('perfiles')
+        .update({
+          'foto_url': url,
+          'updated_at': DateTime.now().toUtc().toIso8601String(),
+        })
+        .eq('user_id', user.id);
+    // Si antes tenía una foto en otro formato, se borra para no dejarla huérfana.
+    final others = avatarStoragePaths(user.id)..remove(path);
+    try {
+      await bucket.remove(others);
+    } catch (_) {
+      // No es grave: solo queda un archivo sin usar.
+    }
+    return url;
+  }
+
+  /// Quita la foto subida (vuelve la de Google o las iniciales).
+  Future<void> quitarFotoPerfil() async {
+    final user = _client.auth.currentUser;
+    if (user == null) throw const AuthException('No hay una sesión activa.');
+    await _client
+        .from('perfiles')
+        .update({
+          'foto_url': null,
+          'updated_at': DateTime.now().toUtc().toIso8601String(),
+        })
+        .eq('user_id', user.id);
+    try {
+      await _client.storage.from('avatars').remove(avatarStoragePaths(user.id));
+    } catch (_) {
+      // El perfil ya no la usa; si el archivo no se pudo borrar, no afecta.
+    }
   }
 
   Future<void> signOut() => _client.auth.signOut();
