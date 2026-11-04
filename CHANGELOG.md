@@ -2,6 +2,12 @@
 
 Todas las versiones notables de **PorcinoTech**. El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y el versionamiento es [semántico](https://semver.org/lang/es/) (`MAYOR.MENOR.PARCHE`). Cada entrega importante se identifica con un tag `vX.Y.Z` y se publica como Release con su APK.
 
+## [1.0.9] - 2026-11-04
+
+### Corregido
+- Subir la foto de perfil fallaba con "permission denied for table perfiles": se dio permiso para actualizar `foto_url` (migración `20261104_foto_perfil_permiso.sql`, ya aplicada en el proyecto).
+- Los campos de los formularios de corrales, alimentos, inseminación y parto ya no aparecen pegados entre sí.
+
 ## [1.0.8] - 2026-11-04
 
 ### Agregado
@@ -101,6 +107,7 @@ Todas las versiones notables de **PorcinoTech**. El formato sigue [Keep a Change
 - Panel de control con métricas y gráfica de consumo.
 - Pruebas de fecha de parto, arete, gestación, peso y capacidad.
 
+[1.0.9]: https://github.com/angel04-gifd/porcinotech/releases/tag/v1.0.9
 [1.0.8]: https://github.com/angel04-gifd/porcinotech/releases/tag/v1.0.8
 [1.0.7]: https://github.com/angel04-gifd/porcinotech/releases/tag/v1.0.7
 [1.0.6]: https://github.com/angel04-gifd/porcinotech/releases/tag/v1.0.6
