@@ -1,0 +1,71 @@
+# Historial de versiones
+
+Todas las versiones notables de **PorcinoTech**. El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y el versionamiento es [semántico](https://semver.org/lang/es/) (`MAYOR.MENOR.PARCHE`). Cada entrega importante se identifica con un tag `vX.Y.Z` y se publica como Release con su APK.
+
+## [1.0.4] - 2026-11-03
+
+### Agregado
+- Cumplimiento de tiendas: eliminar cuenta, política de privacidad y términos de uso (`docs/privacidad.md`, `docs/terminos.md`).
+- Aviso de gestaciones atrasadas en Inicio, marcadas en rojo cuando la fecha de parto ya venció.
+- Pantallas vacías con icono en cerdos, corrales y alimentos.
+- Peso de referencia según la edad en el formulario de cerdos, con confirmación al salir del rango en lechones.
+- Máximo de 3 comidas al día con confirmación y lista para borrar las que sobran.
+- Pruebas automáticas de reglas de comidas, peso de referencia y reglas generales de la app.
+
+### Cambiado
+- Tema visual: tarjetas planas con borde, campos rellenos y botón principal en rosa de cerdo.
+- Tarjetas de Inicio con más jerarquía visual.
+- Los errores se muestran siempre en español.
+- El arete ya no es único por usuario, solo por granja.
+
+### Corregido
+- Coma sobrante en `supabase/setup_completo.sql`.
+- Tipo de la lista de comidas registradas.
+
+## [1.0.3] - 2026-11-02
+
+### Agregado
+- Botón de iniciar sesión con Google al inicio de la pantalla de login.
+
+### Corregido
+- Los errores se muestran como alertas claras, sin el código en crudo.
+
+## [1.0.2] - 2026-10-27
+
+### Agregado
+- Inicio de sesión con Google.
+- Control para que solo un administrador autorizado tenga ese rol.
+- Zona de testers, formulario de observaciones y README separado para usuarios, testers y desarrolladores.
+- Publicación del APK también en el repositorio público de descargas.
+
+### Corregido
+- Las listas ya no dependen solo de Realtime.
+- Observaciones reportadas por los testers.
+
+## [1.0.1] - 2026-10-21
+
+### Agregado
+- Multi granja, roles por cuenta y datos de demostración.
+- Datos personales, ojo para ver la contraseña y recuperación de contraseña con código.
+- Logo e iconos de la app.
+- Identificador de la app, firma y flujo de GitHub Actions para publicar el APK.
+
+### Cambiado
+- Versiones de dependencias actualizadas.
+
+## [1.0.0] - 2026-10-15
+
+### Agregado
+- Esquema de Supabase, roles, etapas productivas y reglas de negocio.
+- Arranque, enrutador, inicio de sesión y perfil.
+- Gestión de cerdos y corrales con validación de capacidad y peso.
+- Alimentos, consumo con stock y ración por etapa productiva.
+- Inseminaciones, calendario de partos y gestación fallida.
+- Panel de control con métricas y gráfica de consumo.
+- Pruebas de fecha de parto, arete, gestación, peso y capacidad.
+
+[1.0.4]: https://github.com/angel04-gifd/porcinotech/releases/tag/v1.0.4
+[1.0.3]: https://github.com/angel04-gifd/porcinotech/releases/tag/v1.0.3
+[1.0.2]: https://github.com/angel04-gifd/porcinotech/compare/v1.0.1...7b022ab
+[1.0.1]: https://github.com/angel04-gifd/porcinotech/releases/tag/v1.0.1
+[1.0.0]: https://github.com/angel04-gifd/porcinotech/releases/tag/v1.0.0
