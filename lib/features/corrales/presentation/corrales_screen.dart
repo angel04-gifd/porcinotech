@@ -382,6 +382,7 @@ class _PenFormState extends ConsumerState<_PenForm> {
             key: _formKey,
             child: Column(
               mainAxisSize: MainAxisSize.min,
+              spacing: 12,
               children: [
                 Text(
                   widget.pen == null ? 'Nuevo corral' : 'Editar corral',

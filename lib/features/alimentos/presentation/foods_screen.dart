@@ -371,6 +371,7 @@ class _FoodFormState extends ConsumerState<_FoodForm> {
             key: _formKey,
             child: Column(
               mainAxisSize: MainAxisSize.min,
+              spacing: 12,
               children: [
                 Text(
                   widget.food == null ? 'Agregar alimento' : 'Editar alimento',
@@ -587,6 +588,7 @@ class _ConsumptionFormState extends ConsumerState<_ConsumptionForm> {
             key: _formKey,
             child: Column(
               mainAxisSize: MainAxisSize.min,
+              spacing: 12,
               children: [
                 Text(
                   'Consumo: ${widget.food['nombre']}',
