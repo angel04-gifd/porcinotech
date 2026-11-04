@@ -10,7 +10,7 @@ El flujo se basa en `main` y ramas de trabajo por funcionalidad.
 2. **Crear una rama** por funcionalidad o tarea.
 3. **Desarrollar y probar:** hacer commits pequeños.
 4. **Subir la rama a GitHub** (`git push`).
-5. **Integrar en `main`:** mediante un Pull Request, o localmente con `merge --no-ff` después de validar.
+5. **Integrar en `main`:** localmente con `merge --no-ff` después de validar (Pull Request opcional).
 6. **Publicar una versión estable:** crear un tag y un Release cuando corresponda.
 
 ## 2. Ramas
@@ -46,11 +46,7 @@ git commit -m "feat: agregar eliminar cuenta"
 git push -u origin feature/eliminar-cuenta
 ```
 
-Después se revisan los cambios y las pruebas (`flutter analyze` y `flutter test`). Si todo funciona, se integra la rama.
-
-**Con Pull Request (recomendado):** abrir el PR en GitHub, esperar que el CI pase y fusionarlo con **Create a merge commit**, que equivale a `--no-ff`.
-
-**Sin Pull Request:**
+Después se revisan los cambios y las pruebas (`flutter analyze` y `flutter test`). Si todo funciona, se integra la rama:
 
 ```bash
 git switch main
@@ -58,9 +54,11 @@ git pull origin main
 git merge --no-ff feature/eliminar-cuenta
 git push origin main
 
-# 5. Eliminar solo la rama local
+# 5. Eliminar la rama local
 git branch -d feature/eliminar-cuenta
 ```
+
+Si se trabaja con un **Pull Request** (opcional), la integración se puede hacer directamente desde GitHub con **Create a merge commit**, que equivale a `--no-ff`, en lugar de ejecutar el merge local.
 
 ## 4. Mensajes de commit
 
