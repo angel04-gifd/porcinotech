@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
@@ -222,8 +223,9 @@ class _PigForm extends ConsumerStatefulWidget {
 class _PigFormState extends ConsumerState<_PigForm> {
   final _key = GlobalKey<FormState>();
   final _name = TextEditingController();
-  final _raza = TextEditingController();
+  final _razaOtra = TextEditingController();
   final _peso = TextEditingController();
+  String? _razaOpcion;
   String _sexo = 'hembra';
   String _estado = 'activo';
   String? _corral;
@@ -245,7 +247,9 @@ class _PigFormState extends ConsumerState<_PigForm> {
     if (pig == null) _actualizarAretePrevio();
     if (pig != null) {
       _name.text = pig['nombre'] as String? ?? '';
-      _raza.text = pig['raza'] as String? ?? '';
+      final raza = breedSelectionFor(pig['raza'] as String?);
+      _razaOpcion = raza.opcion;
+      _razaOtra.text = raza.otra;
       _peso.text = pig['peso']?.toString() ?? '';
       _sexo = pig['sexo'] as String? ?? 'hembra';
       _estado = pig['estado'] as String? ?? 'activo';
@@ -269,7 +273,7 @@ class _PigFormState extends ConsumerState<_PigForm> {
   @override
   void dispose() {
     _name.dispose();
-    _raza.dispose();
+    _razaOtra.dispose();
     _peso.dispose();
     super.dispose();
   }
@@ -357,7 +361,7 @@ class _PigFormState extends ConsumerState<_PigForm> {
         final arete = await repository.createPig(
           sexo: _sexo,
           nombre: _name.text,
-          raza: _raza.text,
+          raza: breedToSave(opcion: _razaOpcion, otra: _razaOtra.text),
           peso: peso,
           corralId: _corral,
           fechaNacimiento: _birth,
@@ -373,7 +377,7 @@ class _PigFormState extends ConsumerState<_PigForm> {
           sexo: _sexo,
           estado: _estado,
           nombre: _name.text,
-          raza: _raza.text,
+          raza: breedToSave(opcion: _razaOpcion, otra: _razaOtra.text),
           peso: peso,
           corralId: _corral,
           fechaNacimiento: _birth,
@@ -405,6 +409,7 @@ class _PigFormState extends ConsumerState<_PigForm> {
             key: _key,
             child: Column(
               mainAxisSize: MainAxisSize.min,
+              spacing: 12,
               children: [
                 Text(
                   widget.pig == null ? 'Nuevo cerdo' : 'Editar cerdo',
@@ -426,16 +431,47 @@ class _PigFormState extends ConsumerState<_PigForm> {
                     labelText: 'Nombre del cerdo',
                   ),
                 ),
-                TextFormField(
-                  controller: _raza,
+                DropdownButtonFormField<String?>(
+                  initialValue: _razaOpcion,
                   decoration: const InputDecoration(labelText: 'Raza'),
+                  items: [
+                    const DropdownMenuItem<String?>(
+                      value: null,
+                      child: Text('Sin especificar'),
+                    ),
+                    for (final breed in pigBreeds)
+                      DropdownMenuItem<String?>(
+                        value: breed,
+                        child: Text(breed),
+                      ),
+                    const DropdownMenuItem<String?>(
+                      value: otherBreed,
+                      child: Text('Otra'),
+                    ),
+                  ],
+                  onChanged: (value) => setState(() => _razaOpcion = value),
                 ),
+                if (_razaOpcion == otherBreed)
+                  TextFormField(
+                    controller: _razaOtra,
+                    textCapitalization: TextCapitalization.words,
+                    decoration: const InputDecoration(
+                      labelText: 'Escribe la raza',
+                    ),
+                    validator: validateOtherBreed,
+                  ),
                 TextFormField(
                   controller: _peso,
                   keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
-                  decoration: const InputDecoration(labelText: 'Peso (kg)'),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
+                  ],
+                  decoration: const InputDecoration(
+                    labelText: 'Peso (kg)',
+                    helperText: 'Peso en kilogramos, por ejemplo 60.5',
+                  ),
                   validator: validatePigWeight,
                 ),
                 DropdownButtonFormField<String>(
@@ -531,13 +567,19 @@ class _PigFormState extends ConsumerState<_PigForm> {
                     onChanged: (value) => setState(() => _corral = value),
                   ),
                 ),
-                const SizedBox(height: 16),
                 FilledButton(
                   onPressed: _saving ? null : _save,
                   child: _saving
-                      ? const SizedBox.square(
-                          dimension: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
+                      ? const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          spacing: 10,
+                          children: [
+                            SizedBox.square(
+                              dimension: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                            Text('Guardando…'),
+                          ],
                         )
                       : Text(
                           widget.pig == null ? 'Guardar' : 'Guardar cambios',
