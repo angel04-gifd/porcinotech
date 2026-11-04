@@ -46,3 +46,14 @@ String? pickAvatarUrl({String? uploaded, String? google}) {
   final fromGoogle = google?.trim() ?? '';
   return fromGoogle.isEmpty ? null : fromGoogle;
 }
+
+/// Título del aviso que se muestra antes de abrir la galería o la cámara.
+String photoPermissionTitle({required bool camera}) =>
+    camera ? '¿Abrir la cámara?' : '¿Abrir tu galería?';
+
+/// Texto del aviso: explica qué se va a abrir y que solo se sube la foto elegida.
+String photoPermissionMessage({required bool camera}) => camera
+    ? 'PorcinoTech usará la cámara para tomar tu foto de perfil. '
+        'Solo se guardará la foto que tomes.'
+    : 'PorcinoTech abrirá tu galería para que elijas tu foto de perfil. '
+        'Solo se guardará la foto que selecciones; el resto de tus fotos no se comparte.';
