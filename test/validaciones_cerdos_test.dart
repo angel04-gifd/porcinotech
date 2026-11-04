@@ -46,6 +46,82 @@ void main() {
     });
   });
 
+  group('motivo cuando el cerdo no tiene corral', () {
+    test('un cerdo sin corral debe elegir un motivo', () {
+      expect(
+        validateNoPenReasonChoice(null, needsReason: true),
+        'Indica por qué no tiene corral',
+      );
+      expect(validateNoPenReasonChoice('Venta', needsReason: true), isNull);
+    });
+
+    test('con corral no se pide motivo', () {
+      expect(validateNoPenReasonChoice(null, needsReason: false), isNull);
+    });
+
+    test('"Otro" exige escribir el motivo', () {
+      expect(validateNoPenReasonText(''), 'Escribe el motivo');
+      expect(validateNoPenReasonText(null), isNotNull);
+      expect(validateNoPenReasonText('Regalado'), isNull);
+      expect(validateNoPenReasonText('x' * 61), isNotNull);
+    });
+
+    test('el motivo se guarda solo si no hay corral', () {
+      expect(
+        noPenReasonToSave(corralId: null, opcion: 'Matadero', otro: ''),
+        'Matadero',
+      );
+      expect(
+        noPenReasonToSave(corralId: 'c1', opcion: 'Matadero', otro: ''),
+        isNull,
+      );
+      expect(noPenReasonToSave(corralId: null, opcion: null, otro: 'x'), isNull);
+    });
+
+    test('"Otro" guarda el texto escrito', () {
+      expect(
+        noPenReasonToSave(
+          corralId: null,
+          opcion: otherNoPenReason,
+          otro: ' Regalado ',
+        ),
+        'Regalado',
+      );
+      expect(
+        noPenReasonToSave(corralId: null, opcion: otherNoPenReason, otro: ' '),
+        isNull,
+      );
+    });
+
+    test('un motivo guardado se reconoce en el menú', () {
+      expect(noPenReasonSelectionFor('venta').opcion, 'Venta');
+      expect(noPenReasonSelectionFor('Matadero').opcion, 'Matadero');
+      final otro = noPenReasonSelectionFor('Regalado');
+      expect(otro.opcion, otherNoPenReason);
+      expect(otro.otro, 'Regalado');
+      expect(noPenReasonSelectionFor(null).opcion, isNull);
+    });
+
+    test('el motivo sugiere el estado del cerdo', () {
+      expect(estadoSugeridoPorMotivo('Venta'), 'vendido');
+      expect(estadoSugeridoPorMotivo('Matadero'), 'baja');
+      expect(estadoSugeridoPorMotivo('Fallecimiento'), 'fallecido');
+      expect(estadoSugeridoPorMotivo('Cuarentena o enfermería'), isNull);
+      expect(estadoSugeridoPorMotivo(null), isNull);
+    });
+
+    test('la lista incluye venta y matadero', () {
+      expect(noPenReasons, containsAll(['Venta', 'Matadero', 'Fallecimiento']));
+    });
+
+    test('el texto del corral muestra el nombre, el motivo o que falta', () {
+      expect(penLabelFor(penName: 'Corral 1', motivo: 'Venta'), 'Corral 1');
+      expect(penLabelFor(motivo: 'Venta'), 'Sin corral (Venta)');
+      expect(penLabelFor(), 'Sin corral · falta el motivo');
+      expect(penLabelFor(motivo: '  '), 'Sin corral · falta el motivo');
+    });
+  });
+
   group('monta reciente (inseminación)', () {
     final hoy = DateTime(2026, 11, 4);
     List<Map<String, dynamic>> montas(String fecha, {String cerda = 's1'}) => [
