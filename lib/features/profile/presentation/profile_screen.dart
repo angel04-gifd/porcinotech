@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../core/widgets/error_view.dart';
 import '../../../core/widgets/user_avatar.dart';
 import '../../auth/data/auth_repository.dart';
+import '../data/avatar_rules.dart';
 import '../../auth/presentation/auth_controller.dart';
 import '../../farms/presentation/farm_picker.dart';
 
@@ -89,6 +91,102 @@ class ProfileScreen extends ConsumerWidget {
     }
   }
 
+  /// Opciones de la foto: galería, cámara y, si ya subió una, quitarla.
+  Future<void> _photoOptions(
+    BuildContext context,
+    WidgetRef ref, {
+    required bool hasPhoto,
+  }) async {
+    final action = await showModalBottomSheet<String>(
+      context: context,
+      builder: (sheetContext) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_library_outlined),
+              title: const Text('Elegir de la galería'),
+              onTap: () => Navigator.pop(sheetContext, 'galeria'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_camera_outlined),
+              title: const Text('Tomar una foto'),
+              onTap: () => Navigator.pop(sheetContext, 'camara'),
+            ),
+            if (hasPhoto)
+              ListTile(
+                leading: const Icon(Icons.delete_outline),
+                title: const Text('Quitar mi foto'),
+                onTap: () => Navigator.pop(sheetContext, 'quitar'),
+              ),
+          ],
+        ),
+      ),
+    );
+    if (action == null || !context.mounted) return;
+    if (action == 'quitar') {
+      await _removePhoto(context, ref);
+    } else {
+      await _pickPhoto(
+        context,
+        ref,
+        action == 'camara' ? ImageSource.camera : ImageSource.gallery,
+      );
+    }
+  }
+
+  Future<void> _pickPhoto(
+    BuildContext context,
+    WidgetRef ref,
+    ImageSource source,
+  ) async {
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final file = await ImagePicker().pickImage(
+        source: source,
+        maxWidth: 512,
+        maxHeight: 512,
+        imageQuality: 85,
+      );
+      if (file == null) return;
+      final extension = avatarExtensionFor(file.name);
+      if (extension == null) {
+        messenger.showSnackBar(
+          const SnackBar(content: Text('Elige una foto JPG, PNG o WebP.')),
+        );
+        return;
+      }
+      final bytes = await file.readAsBytes();
+      final problem = validateAvatarBytes(bytes.length);
+      if (problem != null) {
+        messenger.showSnackBar(SnackBar(content: Text(problem)));
+        return;
+      }
+      await ref
+          .read(authRepositoryProvider)
+          .subirFotoPerfil(bytes, extension: extension);
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Foto de perfil actualizada.')),
+      );
+    } catch (error) {
+      if (context.mounted) {
+        showErrorSnackBar(context, 'No se pudo guardar la foto', error);
+      }
+    }
+  }
+
+  Future<void> _removePhoto(BuildContext context, WidgetRef ref) async {
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      await ref.read(authRepositoryProvider).quitarFotoPerfil();
+      messenger.showSnackBar(const SnackBar(content: Text('Foto quitada.')));
+    } catch (error) {
+      if (context.mounted) {
+        showErrorSnackBar(context, 'No se pudo quitar la foto', error);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final email = ref.watch(currentUserEmailProvider);
@@ -106,8 +204,38 @@ class ProfileScreen extends ConsumerWidget {
     return ListView(
       padding: const EdgeInsets.all(20),
       children: [
-        const Center(child: UserAvatar(radius: 36)),
-        const SizedBox(height: 12),
+        Center(
+          child: InkResponse(
+            onTap: () => _photoOptions(
+              context,
+              ref,
+              hasPhoto: '${profile?['foto_url'] ?? ''}'.trim().isNotEmpty,
+            ),
+            child: Stack(
+              children: [
+                const UserAvatar(radius: 36),
+                Positioned(
+                  right: 0,
+                  bottom: 0,
+                  child: CircleAvatar(
+                    radius: 13,
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    child: Icon(
+                      Icons.photo_camera,
+                      size: 15,
+                      color: Theme.of(context).colorScheme.onPrimary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 4),
+        Center(
+          child: Text('Toca la foto para cambiarla', style: texts.bodySmall),
+        ),
+        const SizedBox(height: 8),
         Center(child: Text(email ?? '', style: texts.titleMedium)),
         const SizedBox(height: 16),
         Card(

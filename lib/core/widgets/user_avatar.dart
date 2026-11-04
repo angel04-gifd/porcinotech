@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../features/auth/data/auth_repository.dart';
+import '../../features/profile/data/avatar_rules.dart';
 
 /// Iniciales para el avatar: las dos primeras letras del nombre ("Angel Jovani"
 /// → "AJ"); sin nombre, la primera letra del correo; sin nada, "?".
@@ -23,8 +24,8 @@ String userInitials({String? name, String? email}) {
   return '?';
 }
 
-/// Avatar de la cuenta: la foto de Google si existe y, si no (o si no carga),
-/// las iniciales del nombre o del correo.
+/// Avatar de la cuenta: la foto que subió el usuario, si no la de Google y, si
+/// no hay (o no carga), las iniciales del nombre o del correo.
 class UserAvatar extends ConsumerWidget {
   const UserAvatar({super.key, this.radius = 16});
 
@@ -32,8 +33,11 @@ class UserAvatar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final url = ref.watch(currentUserAvatarProvider);
     final profile = ref.watch(currentProfileProvider).valueOrNull;
+    final url = pickAvatarUrl(
+      uploaded: profile?['foto_url'] as String?,
+      google: ref.watch(currentUserAvatarProvider),
+    );
     final email = ref.watch(currentUserEmailProvider);
     final initials = Text(
       userInitials(name: profile?['nombre'] as String?, email: email),
