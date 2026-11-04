@@ -2,6 +2,14 @@
 
 Todas las versiones notables de **PorcinoTech**. El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y el versionamiento es [semántico](https://semver.org/lang/es/) (`MAYOR.MENOR.PARCHE`). Cada entrega importante se identifica con un tag `vX.Y.Z` y se publica como Release con su APK.
 
+## [1.0.7] - 2026-11-04
+
+> Antes de instalar esta versión hay que ejecutar en el SQL Editor de Supabase las migraciones `20261104_motivo_sin_corral.sql` y `20261104_foto_perfil.sql`.
+
+### Agregado
+- Un cerdo sin corral debe indicar por qué: venta, matadero, fallecimiento, cuarentena o enfermería, traslado a otra granja u otro motivo. El motivo sugiere el estado (vendido, baja o fallecido) y se muestra en la lista y en el detalle.
+- Foto de perfil: se puede elegir de la galería o tomar con la cámara (JPG, PNG o WebP, hasta 2 MB), cambiar o quitar desde el perfil. Tiene prioridad sobre la foto de Google.
+
 ## [1.0.6] - 2026-11-04
 
 ### Agregado
@@ -88,6 +96,7 @@ Todas las versiones notables de **PorcinoTech**. El formato sigue [Keep a Change
 - Panel de control con métricas y gráfica de consumo.
 - Pruebas de fecha de parto, arete, gestación, peso y capacidad.
 
+[1.0.7]: https://github.com/angel04-gifd/porcinotech/releases/tag/v1.0.7
 [1.0.6]: https://github.com/angel04-gifd/porcinotech/releases/tag/v1.0.6
 [1.0.5]: https://github.com/angel04-gifd/porcinotech/releases/tag/v1.0.5
 [1.0.4]: https://github.com/angel04-gifd/porcinotech/releases/tag/v1.0.4
