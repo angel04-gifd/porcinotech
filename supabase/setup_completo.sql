@@ -1677,6 +1677,7 @@ notify pgrst, 'reload schema';
 -- Foto de perfil (migración 20261104_foto_perfil.sql)
 -- ---------------------------------------------------------------------------
 alter table public.perfiles add column if not exists foto_url text;
+grant update (foto_url) on public.perfiles to authenticated;
 
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values ('avatars', 'avatars', true, 2097152, array['image/jpeg', 'image/png', 'image/webp'])
