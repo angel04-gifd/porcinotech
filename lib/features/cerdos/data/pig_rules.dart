@@ -82,6 +82,11 @@ String? validatePigName(String? value, {Iterable<String> aretes = const []}) {
   return null;
 }
 
+/// Al registrar un cerdo nuevo hay que elegir corral; al editar uno que ya
+/// estaba sin corral no se bloquea.
+String? validatePenChoice(String? penId, {required bool isNewPig}) =>
+    isNewPig && penId == null ? 'Elige un corral' : null;
+
 /// Un corral admite otro cerdo activo solo si no está lleno.
 bool penHasRoom({required int capacity, required int activeResidents}) =>
     activeResidents < capacity;

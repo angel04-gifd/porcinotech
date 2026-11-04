@@ -560,12 +560,21 @@ class _PigFormState extends ConsumerState<_PigForm> {
                     initialValue: rows.any((pen) => pen['id'] == _corral)
                         ? _corral
                         : null,
-                    decoration: const InputDecoration(labelText: 'Corral'),
+                    decoration: InputDecoration(
+                      labelText: 'Corral',
+                      helperText: rows.isEmpty && widget.pig == null
+                          ? 'Primero registra un corral en la pestaña Corrales'
+                          : null,
+                    ),
+                    hint: const Text('Elige un corral'),
+                    validator: (value) =>
+                        validatePenChoice(value, isNewPig: widget.pig == null),
                     items: [
-                      const DropdownMenuItem<String?>(
-                        value: null,
-                        child: Text('Sin corral'),
-                      ),
+                      if (widget.pig != null)
+                        const DropdownMenuItem<String?>(
+                          value: null,
+                          child: Text('Sin corral'),
+                        ),
                       for (final pen in rows)
                         DropdownMenuItem<String?>(
                           value: pen['id'] as String,

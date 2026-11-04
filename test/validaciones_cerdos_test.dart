@@ -31,4 +31,18 @@ void main() {
       expect(validatePigName('Rosita', aretes: ['0001', '0002']), isNull);
     });
   });
+
+  group('corral al registrar un cerdo', () {
+    test('un cerdo nuevo exige elegir corral', () {
+      expect(validatePenChoice(null, isNewPig: true), 'Elige un corral');
+    });
+
+    test('un cerdo nuevo con corral es válido', () {
+      expect(validatePenChoice('corral-1', isNewPig: true), isNull);
+    });
+
+    test('al editar un cerdo viejo sin corral no se bloquea', () {
+      expect(validatePenChoice(null, isNewPig: false), isNull);
+    });
+  });
 }
