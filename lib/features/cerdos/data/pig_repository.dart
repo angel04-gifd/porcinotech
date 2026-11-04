@@ -91,6 +91,8 @@ class PigRepository {
     double? peso,
     String? corralId,
     DateTime? fechaNacimiento,
+    String? motivoSinCorral,
+    bool limpiarMotivo = false,
   }) async {
     await _client
         .from('cerdos')
@@ -104,6 +106,10 @@ class PigRepository {
           'fecha_nacimiento': fechaNacimiento == null
               ? null
               : _dateOnly(fechaNacimiento),
+          // Solo se envía cuando hay motivo (o hay que borrar uno anterior), así
+          // guardar un cerdo con corral no depende de la columna nueva.
+          if (motivoSinCorral != null || limpiarMotivo)
+            'motivo_sin_corral': motivoSinCorral,
           'updated_at': DateTime.now().toIso8601String(),
         })
         .eq('id', pigId);

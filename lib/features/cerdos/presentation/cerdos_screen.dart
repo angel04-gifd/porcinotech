@@ -149,7 +149,10 @@ class CerdosScreen extends ConsumerWidget {
                 itemBuilder: (context, i) {
                   final pig = sorted[i];
                   final active = pig['estado'] == 'activo';
-                  final penName = penNames[pig['corral_id']] ?? 'Sin corral';
+                  final penName = penLabelFor(
+                    penName: penNames[pig['corral_id']],
+                    motivo: pig['motivo_sin_corral'] as String?,
+                  );
                   final pregnant =
                       pig['sexo'] == 'hembra' &&
                       pendingFarrowingFor(pig['id'] as String, farrowings) !=
@@ -224,8 +227,10 @@ class _PigFormState extends ConsumerState<_PigForm> {
   final _key = GlobalKey<FormState>();
   final _name = TextEditingController();
   final _razaOtra = TextEditingController();
+  final _motivoOtro = TextEditingController();
   final _peso = TextEditingController();
   String? _razaOpcion;
+  String? _motivoOpcion;
   String _sexo = 'hembra';
   String _estado = 'activo';
   String? _corral;
@@ -250,6 +255,11 @@ class _PigFormState extends ConsumerState<_PigForm> {
       final raza = breedSelectionFor(pig['raza'] as String?);
       _razaOpcion = raza.opcion;
       _razaOtra.text = raza.otra;
+      final motivo = noPenReasonSelectionFor(
+        pig['motivo_sin_corral'] as String?,
+      );
+      _motivoOpcion = motivo.opcion;
+      _motivoOtro.text = motivo.otro;
       _peso.text = pig['peso']?.toString() ?? '';
       _sexo = pig['sexo'] as String? ?? 'hembra';
       _estado = pig['estado'] as String? ?? 'activo';
@@ -274,6 +284,7 @@ class _PigFormState extends ConsumerState<_PigForm> {
   void dispose() {
     _name.dispose();
     _razaOtra.dispose();
+    _motivoOtro.dispose();
     _peso.dispose();
     super.dispose();
   }
@@ -444,6 +455,13 @@ class _PigFormState extends ConsumerState<_PigForm> {
           peso: peso,
           corralId: _corral,
           fechaNacimiento: _birth,
+          motivoSinCorral: noPenReasonToSave(
+            corralId: _corral,
+            opcion: _motivoOpcion,
+            otro: _motivoOtro.text,
+          ),
+          limpiarMotivo:
+              widget.pig!['motivo_sin_corral'] != null && _corral != null,
         );
       }
       if (mounted) Navigator.pop(context);
@@ -550,6 +568,8 @@ class _PigFormState extends ConsumerState<_PigForm> {
                 ),
                 if (widget.pig != null)
                   DropdownButtonFormField<String>(
+                    // La llave hace que el menú se rehaga si el motivo cambia el estado.
+                    key: ValueKey('estado-$_estado'),
                     initialValue: _estado,
                     decoration: const InputDecoration(labelText: 'Estado'),
                     items: [
@@ -638,9 +658,53 @@ class _PigFormState extends ConsumerState<_PigForm> {
                           child: Text(pen['nombre'] as String),
                         ),
                     ],
-                    onChanged: (value) => setState(() => _corral = value),
+                    onChanged: (value) => setState(() {
+                      _corral = value;
+                      if (value != null) _motivoOpcion = null;
+                    }),
                   ),
                 ),
+                if (widget.pig != null && _corral == null) ...[
+                  DropdownButtonFormField<String?>(
+                    initialValue: _motivoOpcion,
+                    decoration: const InputDecoration(
+                      labelText: 'Motivo por el que no tiene corral',
+                      helperText: 'Por ejemplo: venta, matadero o fallecimiento',
+                    ),
+                    hint: const Text('Elige un motivo'),
+                    validator: (value) => validateNoPenReasonChoice(
+                      value,
+                      needsReason: _corral == null,
+                    ),
+                    items: [
+                      for (final reason in noPenReasons)
+                        DropdownMenuItem<String?>(
+                          value: reason,
+                          child: Text(reason),
+                        ),
+                      const DropdownMenuItem<String?>(
+                        value: otherNoPenReason,
+                        child: Text('Otro'),
+                      ),
+                    ],
+                    onChanged: (value) => setState(() {
+                      _motivoOpcion = value;
+                      final sugerido = estadoSugeridoPorMotivo(value);
+                      if (sugerido != null && _estado == 'activo') {
+                        _estado = sugerido;
+                      }
+                    }),
+                  ),
+                  if (_motivoOpcion == otherNoPenReason)
+                    TextFormField(
+                      controller: _motivoOtro,
+                      textCapitalization: TextCapitalization.sentences,
+                      decoration: const InputDecoration(
+                        labelText: 'Escribe el motivo',
+                      ),
+                      validator: validateNoPenReasonText,
+                    ),
+                ],
                 FilledButton(
                   onPressed: _saving ? null : _save,
                   child: _saving

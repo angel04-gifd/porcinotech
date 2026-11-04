@@ -165,6 +165,72 @@ SexMixProblem? checkSexMix({
   return null;
 }
 
+/// Motivos por los que un cerdo puede quedar sin corral. Con [otherNoPenReason]
+/// se escribe uno distinto.
+const noPenReasons = [
+  'Venta',
+  'Matadero',
+  'Fallecimiento',
+  'Cuarentena o enfermería',
+  'Traslado a otra granja',
+];
+
+/// Opción del menú de motivos que abre un campo de texto.
+const otherNoPenReason = 'Otro';
+
+/// Estado que conviene al motivo: una venta es 'vendido', el matadero es 'baja'
+/// y un fallecimiento es 'fallecido'. Los demás motivos no cambian el estado.
+String? estadoSugeridoPorMotivo(String? motivo) => switch (motivo) {
+  'Venta' => 'vendido',
+  'Matadero' => 'baja',
+  'Fallecimiento' => 'fallecido',
+  _ => null,
+};
+
+/// Cómo se muestra en el menú un motivo ya guardado: si es de la lista usa esa
+/// opción; si no, queda como [otherNoPenReason] con el texto original.
+({String? opcion, String otro}) noPenReasonSelectionFor(String? saved) {
+  final text = saved?.trim() ?? '';
+  if (text.isEmpty) return (opcion: null, otro: '');
+  for (final reason in noPenReasons) {
+    if (reason.toLowerCase() == text.toLowerCase()) {
+      return (opcion: reason, otro: '');
+    }
+  }
+  return (opcion: otherNoPenReason, otro: text);
+}
+
+/// Motivo que se guarda: solo si el cerdo queda sin corral; con corral es null.
+String? noPenReasonToSave({
+  required String? corralId,
+  required String? opcion,
+  required String otro,
+}) {
+  if (corralId != null || opcion == null) return null;
+  if (opcion != otherNoPenReason) return opcion;
+  final text = otro.trim();
+  return text.isEmpty ? null : text;
+}
+
+/// Un cerdo sin corral ([needsReason]) tiene que elegir por qué.
+String? validateNoPenReasonChoice(String? opcion, {required bool needsReason}) =>
+    needsReason && opcion == null ? 'Indica por qué no tiene corral' : null;
+
+/// Si el motivo es "Otro", hay que escribirlo (hasta 60 letras).
+String? validateNoPenReasonText(String? value) {
+  final text = value?.trim() ?? '';
+  if (text.isEmpty) return 'Escribe el motivo';
+  if (text.length > 60) return 'El motivo es demasiado largo (máximo 60)';
+  return null;
+}
+
+/// Texto del corral en listas y detalle: su nombre, o el motivo si no tiene.
+String penLabelFor({String? penName, String? motivo}) {
+  if (penName != null) return penName;
+  final reason = motivo?.trim() ?? '';
+  return reason.isEmpty ? 'Sin corral · falta el motivo' : 'Sin corral ($reason)';
+}
+
 /// Un corral admite otro cerdo activo solo si no está lleno.
 bool penHasRoom({required int capacity, required int activeResidents}) =>
     activeResidents < capacity;
