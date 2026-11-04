@@ -2,6 +2,11 @@
 
 Todas las versiones notables de **PorcinoTech**. El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y el versionamiento es [semántico](https://semver.org/lang/es/) (`MAYOR.MENOR.PARCHE`). Cada entrega importante se identifica con un tag `vX.Y.Z` y se publica como Release con su APK.
 
+## [1.0.8] - 2026-11-04
+
+### Agregado
+- Aviso de confirmación ("¿Abrir tu galería?" / "¿Abrir la cámara?") antes de elegir la foto de perfil.
+
 ## [1.0.7] - 2026-11-04
 
 > Antes de instalar esta versión hay que ejecutar en el SQL Editor de Supabase las migraciones `20261104_motivo_sin_corral.sql` y `20261104_foto_perfil.sql`.
@@ -96,6 +101,7 @@ Todas las versiones notables de **PorcinoTech**. El formato sigue [Keep a Change
 - Panel de control con métricas y gráfica de consumo.
 - Pruebas de fecha de parto, arete, gestación, peso y capacidad.
 
+[1.0.8]: https://github.com/angel04-gifd/porcinotech/releases/tag/v1.0.8
 [1.0.7]: https://github.com/angel04-gifd/porcinotech/releases/tag/v1.0.7
 [1.0.6]: https://github.com/angel04-gifd/porcinotech/releases/tag/v1.0.6
 [1.0.5]: https://github.com/angel04-gifd/porcinotech/releases/tag/v1.0.5
